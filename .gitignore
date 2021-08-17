@@ -21,7 +21,7 @@
 x64/
 x86/
 bld/
-[Bb]in/
+#[Bb]in/
 [Oo]bj/
 [Ll]og/
 
@@ -332,3 +332,8 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# Custom files
+bin/Manifest Composer.exe
+bin/manifest userfiles.txt
+bin/runes.txt

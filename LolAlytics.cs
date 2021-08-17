@@ -82,11 +82,9 @@ class LolAlytics {
 			Dictionary<string, (int picks, int wins)> allSkills = new Dictionary<string, (int picks, int wins)>();
 			foreach (List<object> sixSkills in skills["skill6"] as List<object>) {
 				string fiveSkills = sixSkills[0].ToString().Substring(0, 5);
-				if (allSkills.TryGetValue(fiveSkills, out (int picks, int wins) stats)) {
-					allSkills[fiveSkills] = (stats.picks + (int)sixSkills[1], stats.wins + (int)sixSkills[2]);
-				} else {
-					allSkills[fiveSkills] = ((int)sixSkills[1], (int)sixSkills[2]);
-				}
+				int picks = (int)sixSkills[1];
+				int wins = (int)sixSkills[2];
+				allSkills[fiveSkills] = allSkills.TryGetValue(fiveSkills, out (int picks, int wins) stats) ? (stats.picks + picks, stats.wins + wins) : (picks, wins);
 			}
 			for (int i = 0; i < 5; i++) {
 				firstSkills += ChooseNextSkill(pickTotal, allSkills, firstSkills);

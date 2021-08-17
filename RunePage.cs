@@ -2,6 +2,21 @@
 using System.Collections.Generic;
 using System.IO;
 
+class Rune {
+	public enum Category {
+		Precision,
+		Domination,
+		Sorcery,
+		Resolve,
+		Inspiration
+	}
+
+	public readonly int id;
+	public readonly Category category;
+	public readonly int row;
+	public readonly int column;
+}
+
 class RunePage {
 	readonly int[] ids = new int[11];
 	public int PrimaryStyle => ids[0];
@@ -55,33 +70,7 @@ class RunePage {
 		{ 8321, (4, 1, 0) }, { 8316, (4, 1, 1) }, { 8345, (4, 1, 2) },
 		{ 8347, (4, 2, 0) }, { 8410, (4, 2, 1) }, { 8352, (4, 2, 2) }
 	};
-	public static readonly Dictionary<(int category, int row, int column), int> templateIndexToId = new Dictionary<(int category, int row, int column), int> {
-		//Precision
-		{ (0, -1, 0), 8005 }, { (0, -1, 1), 8008 }, { (0, -1, 2), 8021 }, { (0, -1, 3), 8010 },
-		{ (0, 0, 0), 9101 }, { (0, 0, 1), 9111 }, { (0, 0, 2), 8009 },
-		{ (0, 1, 0), 9104 }, { (0, 1, 1), 9105 }, { (0, 1, 2), 9103 },
-		{ (0, 2, 0), 8014 }, { (0, 2, 1), 8017 }, { (0, 2, 2), 8299 },
-		//Domination
-		{ (1, -1, 0), 8112 }, { (1, -1, 1), 8124 }, { (1, -1, 2), 8128 }, { (1, -1, 3), 9923 },
-		{ (1, 0, 0), 8126 }, { (1, 0, 1), 8139 }, { (1, 0, 2), 8143 },
-		{ (1, 1, 0), 8136 }, { (1, 1, 1), 8120 }, { (1, 1, 2), 8138 },
-		{ (1, 2, 0), 8135 }, { (1, 2, 1), 8134 }, { (1, 2, 2), 8105 }, { (1, 2, 3), 8106 },
-		//Sorcery
-		{ (2, -1, 0), 8214 }, { (2, -1, 1), 8229 }, { (2, -1, 2), 8230 },
-		{ (2, 0, 0), 8224 }, { (2, 0, 1), 8226 }, { (2, 0, 2), 8275 },
-		{ (2, 1, 0), 8210 }, { (2, 1, 1), 8234 }, { (2, 1, 2), 8233 },
-		{ (2, 2, 0), 8237 }, { (2, 2, 1), 8232 }, { (2, 2, 2), 8236 },
-		//Resolve
-		{ (3, -1, 0), 8437 }, { (3, -1, 1), 8439 }, { (3, -1, 2), 8465 },
-		{ (3, 0, 0), 8446 }, { (3, 0, 1), 8463 }, { (3, 0, 2), 8401 },
-		{ (3, 1, 0), 8429 }, { (3, 1, 1), 8444 }, { (3, 1, 2), 8473 },
-		{ (3, 2, 0), 8451 }, { (3, 2, 1), 8453 }, { (3, 2, 2), 8242 },
-		//Inspiration
-		{ (4, -1, 0), 8351 }, { (4, -1, 1), 8360 }, { (4, -1, 2), 8358 },
-		{ (4, 0, 0), 8306 }, { (4, 0, 1), 8304 }, { (4, 0, 2), 8313 },
-		{ (4, 1, 0), 8321 }, { (4, 1, 1), 8316 }, { (4, 1, 2), 8345 },
-		{ (4, 2, 0), 8347 }, { (4, 2, 1), 8410 }, { (4, 2, 2), 8352 }
-	};
+	public static readonly Dictionary<(int category, int row, int column), int> templateIndexToId = new Dictionary<(int category, int row, int column), int>(idToTemplateIndex.Count);
 	public static (int[][,] keystone, int[,][,] secondary) PrimaryTemplate => (new int[5][,] { new int[4, 2], new int[4, 2], new int[3, 2], new int[3, 2], new int[3, 2] }, SecondaryTemplate);
 	public static int[,][,] SecondaryTemplate => new int[5, 3][,] {
 		{ new int[3, 2], new int[3, 2], new int[3, 2] },
@@ -90,4 +79,10 @@ class RunePage {
 		{ new int[3, 2], new int[3, 2], new int[3, 2] },
 		{ new int[3, 2], new int[3, 2], new int[3, 2] }
 	};
+
+	static RunePage() {
+		foreach (KeyValuePair<int, (int category, int row, int column)> rune in idToTemplateIndex) {
+			templateIndexToId[rune.Value] = rune.Key;
+		}
+	}
 }

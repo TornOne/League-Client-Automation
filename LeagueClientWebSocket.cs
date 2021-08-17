@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 class LeagueClientWebSocket {
 	readonly ClientWebSocket socket;
-	readonly byte[] socketBuffer = new byte[4096];
+	readonly byte[] socketBuffer = new byte[64 * 1024];
 
 	public LeagueClientWebSocket(string[] credentials) {
 		while (true) {
@@ -17,7 +17,7 @@ class LeagueClientWebSocket {
 				socket.ConnectAsync(new Uri($"wss://127.0.0.1:{credentials[2]}"), CancellationToken.None).Wait();
 				break;
 			} catch (Exception e) {
-				Console.WriteLine($"WebSocket connection failed - {e.Message}");
+				Console.WriteLine($"WebSocket connection failed, retrying - {e.Message}");
 				Thread.Sleep(3000);
 			}
 		}
