@@ -17,7 +17,7 @@
 17	Teemo
 18	Tristana
 19	Warwick
-20	Nunu & Willump
+20	Nunu
 21	Miss Fortune
 22	Ashe
 23	Tryndamere

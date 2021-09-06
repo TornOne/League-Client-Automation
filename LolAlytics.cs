@@ -21,7 +21,7 @@ enum Spell {
 
 class LolAlytics {
 	static readonly HttpClient http = new HttpClient {
-		BaseAddress = new Uri("https://apix1.op.lol")
+		BaseAddress = new Uri("https://axe.lolalytics.com")
 	};
 	static readonly Dictionary<Lane, int> laneToQueueMap = new Dictionary<Lane, int> {
 		{ Lane.Default, 420 },
@@ -60,7 +60,8 @@ class LolAlytics {
 
 	public static async Task<LolAlytics> FetchDataAsync(Lane lane, int championId) {
 		try {
-			string queryString = $"&p=d&v=8&cid={championId}&lane={(lane >= Lane.Top && lane <= Lane.Support ? lane.ToString().ToLower() : "default")}&tier={(lane <= Lane.ARAM ? "platinum_plus" : "all")}&queue={laneToQueueMap[lane]}&region=all";
+			//TODO: Make tiers configurable in the config
+			string queryString = $"&p=d&v=1&cid={championId}&lane={(lane >= Lane.Top && lane <= Lane.Support ? lane.ToString().ToLower() : "default")}&tier={(lane <= Lane.ARAM ? "platinum_plus" : "all")}&queue={laneToQueueMap[lane]}&region=all";
 			Dictionary<string, object> data = Json.Deserialize(await http.GetStringAsync("/mega/?ep=champion" + queryString)) as Dictionary<string, object>;
 			Dictionary<string, object> skills = (Json.Deserialize(await http.GetStringAsync("/mega/?ep=champion2" + queryString)) as Dictionary<string, object>)["skills"] as Dictionary<string, object>;
 			int pickTotal = (int)data["n"];
