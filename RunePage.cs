@@ -3,29 +3,24 @@ using System.Collections.Generic;
 using System.IO;
 
 class RunePage {
-	readonly int[] ids = new int[11];
-	public int PrimaryStyle => ids[0];
-	public int SubStyle => ids[1];
+	public readonly int primaryStyle, subStyle;
 	public readonly int[] runes = new int[9];
 
 	public RunePage(int[] ids) {
-		ids.CopyTo(this.ids, 0);
-		Array.Copy(this.ids, 2, runes, 0, 9);
-	}
-
-	public RunePage(int primaryStyle, int subStyle, ICollection<int> runes) {
-		ids[0] = primaryStyle;
-		ids[1] = subStyle;
-		runes.CopyTo(this.runes, 0);
-		runes.CopyTo(ids, 2);
-	}
-
-	public RunePage(TextReader file) {
-		ids = Array.ConvertAll(file.ReadLine().Split(' '), id => int.Parse(id));
+		primaryStyle = ids[0];
+		subStyle = ids[1];
 		Array.Copy(ids, 2, runes, 0, 9);
 	}
 
-	public void WriteToFile(TextWriter file) => file.WriteLine(string.Join(" ", ids));
+	public RunePage(int primaryStyle, int subStyle, ICollection<int> runes) {
+		this.primaryStyle = primaryStyle;
+		this.subStyle = subStyle;
+		runes.CopyTo(this.runes, 0);
+	}
+
+	public RunePage(TextReader file) : this(Array.ConvertAll(file.ReadLine().Split(' '), id => int.Parse(id))) { }
+
+	public void WriteToFile(TextWriter file) => file.WriteLine($"{primaryStyle} {subStyle} {string.Join(" ", runes)}");
 
 	public static readonly int[] styleIds = new[] { 8000, 8100, 8200, 8400, 8300 }; //Precision, Domination, Sorcery, Resolve, Inspiration
 	public static readonly Dictionary<int, (int category, int row, int column)> idToTemplateIndex = new Dictionary<int, (int, int, int)> {
