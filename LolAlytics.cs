@@ -194,7 +194,7 @@ class LolAlytics {
 		(int, int, int, int, double totalValue)[] bestPrimaries = new (int, int, int, int, double)[5];
 		(int, int, double totalValue)[] bestSecondaries = new (int, int, double)[5];
 
-		for (int category = 0; category < 5; category++) {
+		for (int category = 0; category < RunePage.categoryCount; category++) {
 			double value;
 			(bestPrimaries[category].Item1, bestPrimaries[category].totalValue) = GetBestRuneInRow(category, -1, keystones[category]);
 			(bestPrimaries[category].Item2, value) = GetBestRuneInRow(category, 0, primary[category, 0]);
@@ -221,8 +221,8 @@ class LolAlytics {
 
 		double bestValue = 0;
 		int[] bestRunes = new int[11];
-		for (int primaryCategory = 0; primaryCategory < 5; primaryCategory++) {
-			for (int secondaryCategory = 0; secondaryCategory < 5; secondaryCategory++) {
+		for (int primaryCategory = 0; primaryCategory < RunePage.categoryCount; primaryCategory++) {
+			for (int secondaryCategory = 0; secondaryCategory < RunePage.categoryCount; secondaryCategory++) {
 				if (primaryCategory == secondaryCategory) {
 					continue;
 				}
@@ -247,10 +247,10 @@ class LolAlytics {
 	static (int id, double value) GetBestRuneInRow(int category, int row, double[] runes) {
 		int bestRune = 0;
 		double bestValue = 0;
-		for (int column = 0; column < runes.GetLength(0); column++) {
+		for (int column = 0; column < runes.Length; column++) {
 			if (runes[column] > bestValue) {
 				bestValue = runes[column];
-				bestRune = RunePage.templateIndexToId[(category, row, column)];
+				bestRune = RunePage.runeIds[category, row][column];
 			}
 		}
 		return (bestRune, bestValue);

@@ -254,8 +254,8 @@ class Program {
 			{ "lastModified", (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds },
 			{ "name", pageName },
 			{ "order", 0 },
-			{ "primaryStyleId", runePage.PrimaryStyle },
-			{ "subStyleId", runePage.SubStyle },
+			{ "primaryStyleId", runePage.primaryStyle },
+			{ "subStyleId", runePage.subStyle },
 			{ "selectedPerkIds", runePage.runes }
 		}));
 		request.Headers.ContentType.MediaType = "application/json";
