@@ -51,13 +51,13 @@ class RunePage {
 		{ 8347, (4, 2, 0) }, { 8410, (4, 2, 1) }, { 8352, (4, 2, 2) }
 	};
 	public static readonly Dictionary<(int category, int row, int column), int> templateIndexToId = new Dictionary<(int category, int row, int column), int>(idToTemplateIndex.Count);
-	public static (int[][,] keystone, int[,][,] secondary) PrimaryTemplate => (new int[5][,] { new int[4, 2], new int[4, 2], new int[3, 2], new int[3, 2], new int[3, 2] }, SecondaryTemplate);
-	public static int[,][,] SecondaryTemplate => new int[5, 3][,] {
-		{ new int[3, 2], new int[3, 2], new int[3, 2] },
-		{ new int[3, 2], new int[3, 2], new int[4, 2] },
-		{ new int[3, 2], new int[3, 2], new int[3, 2] },
-		{ new int[3, 2], new int[3, 2], new int[3, 2] },
-		{ new int[3, 2], new int[3, 2], new int[3, 2] }
+	public static (double[][] keystone, double[,][] secondary) PrimaryTemplate => (new double[5][] { new double[4], new double[4], new double[3], new double[3], new double[3] }, SecondaryTemplate);
+	public static double[,][] SecondaryTemplate => new double[5, 3][] {
+		{ new double[3], new double[3], new double[3] },
+		{ new double[3], new double[3], new double[4] },
+		{ new double[3], new double[3], new double[3] },
+		{ new double[3], new double[3], new double[3] },
+		{ new double[3], new double[3], new double[3] }
 	};
 
 	static RunePage() {

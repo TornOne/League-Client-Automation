@@ -109,8 +109,8 @@ class LolAlytics {
 			Dictionary<string, object> runes = (data["runes"] as Dictionary<string, object>)["stats"] as Dictionary<string, object>;
 			string[] smallRunes = new[] { "5008", "5005", "5007", "5008f", "5002f", "5003f", "5001", "5002", "5003" };
 
-			(int[][,] keystone, int[,][,] primary) = RunePage.PrimaryTemplate;
-			int[,][,] secondary = RunePage.SecondaryTemplate;
+			(double[][] keystone, double[,][] primary) = RunePage.PrimaryTemplate;
+			double[,][] secondary = RunePage.SecondaryTemplate;
 			foreach (KeyValuePair<string, object> rune in runes) {
 				if (Array.Exists(smallRunes, id => id == rune.Key)) {
 					continue;
@@ -120,20 +120,17 @@ class LolAlytics {
 
 				List<object> counts = stats[0] as List<object>;
 				if (row == -1) { //Keystone
-					keystone[category][column, 0] = (int)counts[2];
-					keystone[category][column, 1] = GetWinCount(counts[2], counts[1]);
+					keystone[category][column] = GetValue(pickTotal, (int)counts[2], GetWinCount(counts[2], counts[1]));
 				} else {
-					primary[category, row][column, 0] = (int)counts[2];
-					primary[category, row][column, 1] = GetWinCount(counts[2], counts[1]);
+					primary[category, row][column] = GetValue(pickTotal, (int)counts[2], GetWinCount(counts[2], counts[1]));
 				}
 
 				if (stats.Count > 1) {
 					counts = stats[1] as List<object>;
-					secondary[category, row][column, 0] = (int)counts[2];
-					secondary[category, row][column, 1] = GetWinCount(counts[2], counts[1]);
+					secondary[category, row][column] = GetValue(pickTotal, (int)counts[2], GetWinCount(counts[2], counts[1]));
 				}
 			}
-			int[] bestRunes = GetBestRunes(pickTotal, keystone, primary, secondary);
+			int[] bestRunes = GetBestRunes(keystone, primary, secondary);
 
 			for (int i = 0; i < 3; i++) {
 				int bestRune = 0;
@@ -193,24 +190,24 @@ class LolAlytics {
 		return bestSkill;
 	}
 
-	static int[] GetBestRunes(int pickTotal, int[][,] keystones, int[,][,] primary, int[,][,] secondary) {
+	static int[] GetBestRunes(double[][] keystones, double[,][] primary, double[,][] secondary) {
 		(int, int, int, int, double totalValue)[] bestPrimaries = new (int, int, int, int, double)[5];
 		(int, int, double totalValue)[] bestSecondaries = new (int, int, double)[5];
 
 		for (int category = 0; category < 5; category++) {
 			double value;
-			(bestPrimaries[category].Item1, bestPrimaries[category].totalValue) = GetBestRuneInRow(pickTotal, category, -1, keystones[category]);
-			(bestPrimaries[category].Item2, value) = GetBestRuneInRow(pickTotal, category, 0, primary[category, 0]);
+			(bestPrimaries[category].Item1, bestPrimaries[category].totalValue) = GetBestRuneInRow(category, -1, keystones[category]);
+			(bestPrimaries[category].Item2, value) = GetBestRuneInRow(category, 0, primary[category, 0]);
 			bestPrimaries[category].totalValue += value;
-			(bestPrimaries[category].Item3, value) = GetBestRuneInRow(pickTotal, category, 1, primary[category, 1]);
+			(bestPrimaries[category].Item3, value) = GetBestRuneInRow(category, 1, primary[category, 1]);
 			bestPrimaries[category].totalValue += value;
-			(bestPrimaries[category].Item4, value) = GetBestRuneInRow(pickTotal, category, 2, primary[category, 2]);
+			(bestPrimaries[category].Item4, value) = GetBestRuneInRow(category, 2, primary[category, 2]);
 			bestPrimaries[category].totalValue += value;
 
 			double value1, value2;
-			(bestSecondaries[category].Item1, value1) = GetBestRuneInRow(pickTotal, category, 0, secondary[category, 0]);
-			(bestSecondaries[category].Item2, value2) = GetBestRuneInRow(pickTotal, category, 1, secondary[category, 1]);
-			(int item3, double value3) = GetBestRuneInRow(pickTotal, category, 2, secondary[category, 2]);
+			(bestSecondaries[category].Item1, value1) = GetBestRuneInRow(category, 0, secondary[category, 0]);
+			(bestSecondaries[category].Item2, value2) = GetBestRuneInRow(category, 1, secondary[category, 1]);
+			(int item3, double value3) = GetBestRuneInRow(category, 2, secondary[category, 2]);
 			if (value3 > value1 && value2 > value1) {
 				bestSecondaries[category].Item1 = item3;
 				bestSecondaries[category].totalValue = value2 + value3;
@@ -247,13 +244,12 @@ class LolAlytics {
 		return bestRunes;
 	}
 
-	static (int id, double value) GetBestRuneInRow(int pickTotal, int category, int row, int[,] runes) {
+	static (int id, double value) GetBestRuneInRow(int category, int row, double[] runes) {
 		int bestRune = 0;
 		double bestValue = 0;
 		for (int column = 0; column < runes.GetLength(0); column++) {
-			double value = GetValue(pickTotal, runes[column, 0], runes[column, 1]);
-			if (value > bestValue) {
-				bestValue = value;
+			if (runes[column] > bestValue) {
+				bestValue = runes[column];
 				bestRune = RunePage.templateIndexToId[(category, row, column)];
 			}
 		}
