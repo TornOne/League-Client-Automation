@@ -2,21 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 
-class Rune {
-	public enum Category {
-		Precision,
-		Domination,
-		Sorcery,
-		Resolve,
-		Inspiration
-	}
-
-	public readonly int id;
-	public readonly Category category;
-	public readonly int row;
-	public readonly int column;
-}
-
 class RunePage {
 	readonly int[] ids = new int[11];
 	public int PrimaryStyle => ids[0];
