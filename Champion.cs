@@ -141,6 +141,8 @@ class Champion {
 
 	public bool TryGetRunePage(out RunePage runePage, Lane lane = Lane.Default) => runePages.TryGetValue(lane, out runePage) || lane != Lane.Default && runePages.TryGetValue(Lane.Default, out runePage);
 
+	public bool TryDeleteRunePage(Lane lane) => runePages.Remove(lane);
+
 	public async Task<LolAlytics> GetLolAlytics(Lane lane) {
 		if (!lolAlyticsInfo.TryGetValue(lane, out LolAlytics lolAlyticsLane)) {
 			lolAlyticsLane = await LolAlytics.FetchDataAsync(lane, id);
