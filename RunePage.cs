@@ -67,8 +67,8 @@ class RunePage {
 
 		return idToTemplateIndex;
 	}
-	public static (double[][] keystone, double[,][] secondary) PrimaryTemplate => (new double[categoryCount][] { new double[4], new double[4], new double[3], new double[3], new double[3] }, SecondaryTemplate);
-	public static double[,][] SecondaryTemplate => new double[categoryCount, rowCount - 1][] {
+	public static double[][] KeystoneTemplate => new double[categoryCount][] { new double[4], new double[4], new double[3], new double[3], new double[3] };
+	public static double[,][] RuneTemplate => new double[categoryCount, rowCount - 1][] {
 		{ new double[3], new double[3], new double[3] },
 		{ new double[3], new double[3], new double[4] },
 		{ new double[3], new double[3], new double[3] },
