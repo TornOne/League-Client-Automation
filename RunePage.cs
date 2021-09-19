@@ -53,8 +53,8 @@ class RunePage {
 		}
 	};
 	public static readonly Dictionary<int, (int category, int row, int column)> idToTemplateIndex = CreateIdToTemplateIndexMap();
-	static Dictionary<int, (int category, int row, int column)> CreateIdToTemplateIndexMap() {
-		Dictionary<int, (int category, int row, int column)> idToTemplateIndex = new Dictionary<int, (int category, int row, int column)>();
+	static Dictionary<int, (int, int, int)> CreateIdToTemplateIndexMap() {
+		Dictionary<int, (int, int, int)> idToTemplateIndex = new Dictionary<int, (int, int, int)>();
 
 		for (int category = 0; category < categoryCount; category++) {
 			for (int row = 0; row < rowCount; row++) {
@@ -67,12 +67,12 @@ class RunePage {
 
 		return idToTemplateIndex;
 	}
-	public static double[][] KeystoneTemplate => new double[categoryCount][] { new double[4], new double[4], new double[3], new double[3], new double[3] };
+	public static double[][] KeystoneTemplate => new double[categoryCount][] { new double[runeIds[0, 0].Length], new double[runeIds[1, 0].Length], new double[runeIds[2, 0].Length], new double[runeIds[3, 0].Length], new double[runeIds[4, 0].Length] };
 	public static double[,][] RuneTemplate => new double[categoryCount, rowCount - 1][] {
-		{ new double[3], new double[3], new double[3] },
-		{ new double[3], new double[3], new double[4] },
-		{ new double[3], new double[3], new double[3] },
-		{ new double[3], new double[3], new double[3] },
-		{ new double[3], new double[3], new double[3] }
+		{ new double[runeIds[0, 1].Length], new double[runeIds[0, 2].Length], new double[runeIds[0, 3].Length] },
+		{ new double[runeIds[1, 1].Length], new double[runeIds[1, 2].Length], new double[runeIds[1, 3].Length] },
+		{ new double[runeIds[2, 1].Length], new double[runeIds[2, 2].Length], new double[runeIds[2, 3].Length] },
+		{ new double[runeIds[3, 1].Length], new double[runeIds[3, 2].Length], new double[runeIds[3, 3].Length] },
+		{ new double[runeIds[4, 1].Length], new double[runeIds[4, 2].Length], new double[runeIds[4, 3].Length] }
 	};
 }

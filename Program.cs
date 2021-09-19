@@ -22,30 +22,15 @@ class Program {
 	static LeagueClientWebSocket socket;
 
 	static RunePage lastRunes;
-	static bool openLolAlytics, setSummonerSpells;
 
 	static async Task Main() {
 		System.Globalization.CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 
-		//Load in all the configuration settings
-		string allText = File.ReadAllText("config.json");
-		Dictionary<string, object> settings = Json.Deserialize(allText) as Dictionary<string, object>;
-		string lockfilePath = settings["installPath"] + "lockfile";
-		openLolAlytics = (bool)settings["openLolAlytics"];
-		setSummonerSpells = (bool)settings["setSummonerSpells"];
-		List<object> spellOrder = settings["spellOrder"] as List<object>;
-		for (int i = 0; i < spellOrder.Count; i++) {
-			if (Enum.TryParse(spellOrder[i] as string, out Spell spell)) {
-				LolAlytics.spellToOrderMap[spell] = i;
-			}
-		}
-		Console.WriteLine("Settings loaded");
-
-		//Load in all the rune pages
+		Config.Load();
 		Champion.Load();
-		Console.WriteLine("Runes loaded");
 
 		//Make sure the game is running and find the credentials
+		string lockfilePath = Config.installPath + "lockfile";
 		while (!File.Exists(lockfilePath)) {
 			await Task.Delay(1000);
 		}
@@ -201,7 +186,7 @@ class Program {
 								}
 							}
 						}
-						if (openLolAlytics) {
+						if (Config.openLolAlytics) {
 							Process.Start(query);
 						}
 						Console.WriteLine($"Selected {champion.fullName} ({lane})");
@@ -306,7 +291,7 @@ class Program {
 		if (lolAlyticsData is null) {
 			return;
 		}
-		if (setSummonerSpells) {
+		if (Config.setSummonerSpells) {
 			await UpdateSummonerSpells(lolAlyticsData.spell1Id, lolAlyticsData.spell2Id);
 		}
 		Console.WriteLine($"Skill order: {lolAlyticsData.skillOrder}");

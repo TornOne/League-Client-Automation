@@ -4,21 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Torn.Json;
 
-enum Spell {
-	Cleanse = 1,
-	Exhaust = 3,
-	Flash = 4,
-	Ghost = 6,
-	Heal = 7,
-	Smite = 11,
-	Teleport = 12,
-	Clarity = 13,
-	Ignite = 14,
-	Barrier = 21,
-	Mark = 32,
-	Placeholder = 54,
-}
-
 class LolAlytics {
 	static readonly HttpClient http = new HttpClient {
 		BaseAddress = new Uri("https://axe.lolalytics.com")
@@ -44,7 +29,6 @@ class LolAlytics {
 		{ 1300, Lane.Nexus },
 		{ 1400, Lane.UltimateSpellBook }
 	};
-	public static readonly Dictionary<Spell, int> spellToOrderMap = new Dictionary<Spell, int>();
 
 	public readonly string skillOrder, firstSkills;
 	public readonly int spell1Id, spell2Id;
@@ -103,7 +87,7 @@ class LolAlytics {
 				}
 			}
 			int[] bestSpells = Array.ConvertAll(spells.Split('_'), int.Parse);
-			Array.Sort(bestSpells, (x, y) => spellToOrderMap[(Spell)x] - spellToOrderMap[(Spell)y]);
+			Array.Sort(bestSpells, (x, y) => Array.IndexOf(Config.spellOrder, (Spell)x) - Array.IndexOf(Config.spellOrder, (Spell)y));
 
 			//Runes
 			Dictionary<string, object> runes = (data["runes"] as Dictionary<string, object>)["stats"] as Dictionary<string, object>;

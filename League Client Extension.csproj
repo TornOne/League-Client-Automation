@@ -32,6 +32,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Champion.cs" />
+    <Compile Include="Config.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="UserInput.cs" />
     <Compile Include="LeagueClientWebSocket.cs" />
     <Compile Include="LolAlytics.cs" />
     <Compile Include="Program.cs" />

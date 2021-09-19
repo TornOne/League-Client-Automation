@@ -1,21 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-
-enum Lane {
-	Default,
-	Top,
-	Jungle,
-	Middle,
-	Bottom,
-	Support,
-	ARAM,
-	URF,
-	OneForAll,
-	Nexus,
-	UltimateSpellBook
-}
 
 class Champion {
 	static readonly Dictionary<string, int> simpleNameToId = new Dictionary<string, int>();
@@ -110,6 +97,7 @@ class Champion {
 		}
 
 		file.Close();
+		Console.WriteLine("Runes loaded");
 	}
 
 	static void Save() {
