@@ -5,6 +5,7 @@ using Torn.Json;
 
 static class Config {
 	public static string installPath = "C:\\Program Files\\Riot Games\\League of Legends\\";
+	public static bool launchGame = false;
 	public static bool openLolAlytics = true;
 	public static bool setSummonerSpells = true;
 	public static readonly Spell[] spellOrder = new[] {
@@ -38,6 +39,7 @@ static class Config {
 				installPath += '\\';
 			}
 
+			TrySetValue(nameof(launchGame), ref launchGame);
 			TrySetValue(nameof(openLolAlytics), ref openLolAlytics);
 			TrySetValue(nameof(setSummonerSpells), ref setSummonerSpells);
 
@@ -59,6 +61,7 @@ static class Config {
 		//Save
 		File.WriteAllText(configPath, Json.PrettyPrint(Json.Serialize(new Dictionary<string, object> {
 			{ nameof(installPath), installPath },
+			{ nameof(launchGame), launchGame },
 			{ nameof(openLolAlytics), openLolAlytics },
 			{ nameof(setSummonerSpells), setSummonerSpells },
 			{ nameof(spellOrder), Array.ConvertAll(spellOrder, spell => spell.ToString()) }

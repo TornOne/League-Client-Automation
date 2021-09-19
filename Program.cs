@@ -29,6 +29,10 @@ class Program {
 		Config.Load();
 		Champion.Load();
 
+		if (Config.launchGame) {
+			Process.Start(Config.installPath + "LeagueClient.exe");
+		}
+
 		//Make sure the game is running and find the credentials
 		string lockfilePath = Config.installPath + "lockfile";
 		while (!File.Exists(lockfilePath)) {
