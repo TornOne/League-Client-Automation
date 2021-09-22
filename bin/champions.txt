@@ -150,6 +150,7 @@
 523	Aphelios
 526	Rell
 555	Pyke
+711	Vex
 777	Yone
 875	Sett
 876	Lillia
