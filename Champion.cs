@@ -64,7 +64,7 @@ class Champion {
 
 		string simplePartialLane = SimplifyName(partialLane);
 
-		for (Lane lane = Lane.Top; lane <= Lane.URF; lane++) {
+		foreach (Lane lane in Enum.GetValues(typeof(Lane)) as Lane[]) {
 			if (SimplifyName(lane.ToString()).StartsWith(simplePartialLane)) {
 				return lane;
 			}
