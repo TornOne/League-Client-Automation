@@ -184,8 +184,12 @@ class Program {
 						if (lane == Lane.Default) { //Only need to fetch my lane in a non-special game mode
 							foreach (Dictionary<string, object> player in Json.Deserialize(Json.LazyParseObject(await http.GetStringAsync("/lol-champ-select/v1/session"))["myTeam"]) as List<object>) {
 								if ((player["summonerId"] is int id ? id : (long)player["summonerId"]) == summonerId) {
-									query = $"https://lolalytics.com/lol/{champion.name}/build/?lane={player["assignedPosition"]}";
-									lane = Champion.LaneFromString(player["assignedPosition"] as string);
+									string laneString = player["assignedPosition"] as string;
+									if (laneString == "utility") {
+										laneString = "support";
+									}
+									query = $"https://lolalytics.com/lol/{champion.name}/build/?lane={laneString}";
+									lane = Champion.LaneFromString(laneString);
 									break;
 								}
 							}
