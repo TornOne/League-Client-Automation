@@ -71,7 +71,8 @@ namespace LCA.Client {
 		static Task Subscribe(string eventName) => SendMessage($"[5, \"{eventName}\"]");
 
 		static async Task EventLoop() {
-			int selectedChampion = 0; //TODO: Don't open duplicate LoLAlytics windows for the same champion (in ARAM)
+			HashSet<int> cycledChampions = new HashSet<int>();
+			int selectedChampion = 0;
 
 			while (true) {
 				Json.Node eNode = await ReceiveMessage();
@@ -121,7 +122,8 @@ namespace LCA.Client {
 									}
 								}
 							}
-							if (Config.openLolAlytics) {
+							if (Config.openLolAlytics && !cycledChampions.Contains(selectedChampion)) {
+								cycledChampions.Add(selectedChampion);
 								System.Diagnostics.Process.Start(query);
 							}
 							Console.WriteLine($"Selected {champion.fullName} ({lane})");
@@ -133,6 +135,7 @@ namespace LCA.Client {
 						}
 					} else if (eventType == "Delete") {
 						selectedChampion = 0;
+						cycledChampions.Clear();
 					}
 				}
 			}
