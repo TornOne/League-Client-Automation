@@ -1,20 +1,20 @@
 ﻿{
-	"installPath": "C:\\Program Files\\Riot Games\\League of Legends\\",
-	"launchGame": false,
-	"openLolAlytics": true,
-	"setSummonerSpells": true,
-	"spellOrder": [
-		"Placeholder",
-		"Mark",
-		"Smite",
-		"Ignite",
-		"Exhaust",
-		"Clarity",
-		"Heal",
-		"Barrier",
-		"Cleanse",
-		"Teleport",
-		"Ghost",
-		"Flash"
-	]
+  "installPath": "C:/Program Files/Riot Games/League of Legends/",
+  "launchGame": false,
+  "openLolAlytics": true,
+  "setSummonerSpells": true,
+  "spellOrder": [
+    "Placeholder",
+    "Mark",
+    "Smite",
+    "Ignite",
+    "Exhaust",
+    "Clarity",
+    "Heal",
+    "Barrier",
+    "Cleanse",
+    "Teleport",
+    "Ghost",
+    "Flash"
+  ]
 }
