@@ -4,34 +4,31 @@ using System.Threading.Tasks;
 
 namespace LCA.Client {
 	static class Actions {
-		public static async Task LoadRunePages(Champion champion, Lane lane, RunePage lolAlyticsRunePage) {
-			await FreePages(2);
+		public static async Task<LolAlytics> LoadChampion(Champion champion, Lane lane) {
+			Task<LolAlytics> lolAlyticsTask = champion.GetLolAlytics(lane);
+			await Task.WhenAll(lolAlyticsTask, FreePages(2));
+			LolAlytics lolAlytics = await lolAlyticsTask;
 
-			if (lolAlyticsRunePage is null) {
+			if (lolAlytics?.runePage is null) {
 				Console.WriteLine("LolAlytics rune page not found");
-			} else if (await CreateRunePage(lolAlyticsRunePage, $"{champion.fullName} {lane}")) {
-				Console.WriteLine("LolAlytics rune page loaded");
-			} else {
+			} else if (!await CreateRunePage(lolAlytics.runePage, $"{champion.fullName} {lane}")) {
 				Console.WriteLine("LolAlytics rune page loading failed");
 			}
 
-			if (!champion.TryGetRunePage(out RunePage runePage, lane)) {
-				Console.WriteLine("Preset rune page not found");
-			} else if (await CreateRunePage(runePage, champion.fullName)) {
-				Console.WriteLine("Preset rune page loaded");
-			} else {
+			if (champion.TryGetRunePage(lane, out RunePage runePage) &&
+				!await CreateRunePage(runePage, $"{champion.fullName} Custom")) {
 				Console.WriteLine("Preset rune page loading failed");
 			}
 
-			if (runePage != null && lolAlyticsRunePage != null) {
+			if (lane <= Lane.Support && runePage != null && lolAlytics?.runePage != null) {
 				int differingRuneCount = 0;
 				for (int i = 0; i < 6; i++) {
-					if (!Array.Exists(lolAlyticsRunePage.runes, rune => rune == runePage.runes[i])) {
+					if (!Array.Exists(lolAlytics.runePage.runes, rune => rune == runePage.runes[i])) {
 						differingRuneCount++;
 					}
 				}
 				for (int i = 6; i < 9; i++) {
-					if (runePage.runes[i] != lolAlyticsRunePage.runes[i]) {
+					if (runePage.runes[i] != lolAlytics.runePage.runes[i]) {
 						differingRuneCount++;
 					}
 				}
@@ -40,6 +37,12 @@ namespace LCA.Client {
 					Console.WriteLine($"{differingRuneCount} runes differ between preset and LolAlytics");
 				}
 			}
+
+			if (Config.setSummonerSpells && lolAlytics != null) {
+				await UpdateSummonerSpells(lolAlytics.spell1Id, lolAlytics.spell2Id);
+			}
+
+			return lolAlytics;
 		}
 
 		static async Task FreePages(int amount) {
@@ -68,26 +71,24 @@ namespace LCA.Client {
 		}))).Success;
 
 		static async Task UpdateSummonerSpells(int spell1Id, int spell2Id) {
-			if ((await Http.PatchJson("/lol-champ-select/v1/session/my-selection", Json.Serializer.Serialize(new Dictionary<string, object> {
+			if (!(await Http.PatchJson("/lol-champ-select/v1/session/my-selection", Json.Serializer.Serialize(new Dictionary<string, object> {
 				{ "spell1Id", spell1Id },
 				{ "spell2Id", spell2Id }
 			}))).Success) {
-				Console.WriteLine("Summoner spells successfully updated");
-			} else {
 				Console.WriteLine("Failed to update summoner spells");
 			}
 		}
 
-		public static async Task PrintLolAlyticsData(LolAlytics lolAlyticsData) {
-			if (lolAlyticsData is null) {
-				return;
+		public static void PrintLolAlytics(LolAlytics lolAlytics) {
+			if (Config.openLolAlytics) {
+				System.Diagnostics.Process.Start(lolAlytics.url);
 			}
-			if (Config.setSummonerSpells) {
-				await UpdateSummonerSpells(lolAlyticsData.spell1Id, lolAlyticsData.spell2Id);
+
+			if (lolAlytics != null) {
+				Console.WriteLine($"Skill order: {lolAlytics.skillOrder}");
+				Console.WriteLine($"First skills: {lolAlytics.firstSkills}");
+				Console.WriteLine();
 			}
-			Console.WriteLine($"Skill order: {lolAlyticsData.skillOrder}");
-			Console.WriteLine($"First skills: {lolAlyticsData.firstSkills}");
-			Console.WriteLine();
 		}
 	}
 }

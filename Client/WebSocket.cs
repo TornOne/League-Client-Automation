@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace LCA.Client {
-	//TODO: Add champion rank messages for ARAM game modes
 	static class WebSocket {
 		static ClientWebSocket socket;
 		static byte[] receiveBuffer = new byte[1024];
@@ -30,6 +29,7 @@ namespace LCA.Client {
 			//Subscribe to the events we care about and start the event listening (and responding) loop
 			await Subscribe("OnJsonApiEvent_lol-perks_v1_pages");
 			await Subscribe("OnJsonApiEvent_lol-champ-select_v1_current-champion");
+			await Subscribe("OnJsonApiEvent_lol-champ-select_v1_session");
 			//await Subscribe("OnJsonApiEvent"); //All events
 			_ = EventLoop().ContinueWith(task => Console.WriteLine($"Event loop terminated:\n{task.Exception.GetBaseException()}"));
 		}
@@ -71,8 +71,7 @@ namespace LCA.Client {
 		static Task Subscribe(string eventName) => SendMessage($"[5, \"{eventName}\"]");
 
 		static async Task EventLoop() {
-			HashSet<int> cycledChampions = new HashSet<int>();
-			int selectedChampion = 0;
+			HashSet<int> ourChampions = new HashSet<int>();
 
 			while (true) {
 				Json.Node eNode = await ReceiveMessage();
@@ -94,48 +93,60 @@ namespace LCA.Client {
 
 					Json.Node data = contents["data"];
 					State.lastRunes = new RunePage(data["primaryStyleId"].Get<int>(), data["subStyleId"].Get<int>(), new List<Json.Node>((Json.Array)data["selectedPerkIds"]).ConvertAll(id => id.Get<int>()));
-					Console.WriteLine("Runes updated");
 
-					//Detect lock-ins
+				//Detect lock-ins
 				} else if (endpoint == "OnJsonApiEvent_lol-champ-select_v1_current-champion") {
-					if ((eventType == "Create" || eventType == "Update") && contents["data"].TryGet(out int championId)) {
-						if (selectedChampion != championId) {
-							Champion champion = Champion.idToChampion[championId];
-							selectedChampion = champion.id;
+					if ((eventType == "Create" || eventType == "Update") && contents["data"].TryGet(out int championId) && Champion.idToChampion.TryGetValue(championId, out Champion champion)) {
+						if (champion != State.currentChampion) {
+							State.currentChampion = champion;
+							LolAlytics lolAlytics = await Actions.LoadChampion(champion, State.currentLane);
 
-							//Find lane (or special game mode) I'm playing
-							int queueId = default;
-							queueId = (await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>();
-							Lane lane = LolAlytics.queueToLaneMap.TryGetValue(queueId, out Lane laneName) ? laneName : Lane.Default;
-							string query = $"https://lolalytics.com/lol/{champion.name}/{lane.ToString().ToLower()}/build/";
+							if (State.currentLane != Lane.ARAM) {
+								Actions.PrintLolAlytics(lolAlytics);
+							}
+						}
+					}
 
-							if (lane == Lane.Default) { //Only need to fetch my lane in the main game mode
-								foreach (Json.Object player in (Json.Array)(await Http.GetJson("/lol-champ-select/v1/session"))["myTeam"]) {
-									if (player["summonerId"].Get<long>() == State.summonerId) {
-										string laneString = player["assignedPosition"].Get<string>();
-										if (laneString == "utility") {
-											laneString = "support";
-										}
-										query = $"https://lolalytics.com/lol/{champion.name}/build/?lane={laneString}";
-										lane = Champion.LaneFromString(laneString);
-										break;
-									}
+				//Observe champion select
+				} else if (endpoint == "OnJsonApiEvent_lol-champ-select_v1_session") {
+					if (eventType == "Create") {
+						State.currentLane = LolAlytics.queueToLaneMap.TryGetValue((await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>(), out Lane laneName) ? laneName : Lane.Default;
+
+						if (State.currentLane == Lane.Default) {
+							foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
+								if (teammate["summonerId"].Get<long>() == State.summonerId) {
+									State.currentLane = Champion.LaneFromString(teammate["assignedPosition"].Get<string>());
+									break;
 								}
 							}
-							if (Config.openLolAlytics && !cycledChampions.Contains(selectedChampion)) {
-								cycledChampions.Add(selectedChampion);
-								System.Diagnostics.Process.Start(query);
-							}
-							Console.WriteLine($"Selected {champion.fullName} ({lane})");
+						}
+					}
 
-							//Get data from lolalytics.com
-							LolAlytics lolAlyticsData = await champion.GetLolAlytics(lane);
-							await Actions.LoadRunePages(champion, lane, lolAlyticsData?.runePage);
-							await Actions.PrintLolAlyticsData(lolAlyticsData);
+					if (eventType == "Create" || eventType == "Update") {
+						if (State.currentLane == Lane.ARAM) {
+							if (LolAlytics.aramRanks is null) {
+								await LolAlytics.FetchAramRanks();
+							}
+							if (LolAlytics.aramRanks.Count == 0) { //We have failed to fetch ARAM ranks in the past, lets not spam their server
+								continue;
+							}
+
+							foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
+								int id = teammate["championId"].Get<int>();
+								if (ourChampions.Add(id)) {
+									(int rank, double wr, double delta) = LolAlytics.aramRanks[id];
+									Console.WriteLine($"{Champion.idToChampion[id].fullName,-12} - Rank {rank,3}, WR: {wr:0.0%} ({(delta >= 0 ? "+" : "")}{delta:0.0%})");
+								}
+							}
 						}
 					} else if (eventType == "Delete") {
-						selectedChampion = 0;
-						cycledChampions.Clear();
+						if (State.currentLane == Lane.ARAM && State.currentChampion.lolAlyticsInfo.TryGetValue(State.currentLane, out LolAlytics lolAlytics)) {
+							Actions.PrintLolAlytics(lolAlytics);
+						}
+
+						State.currentChampion = null;
+						ourChampions.Clear();
+						State.currentLane = Lane.Default;
 					}
 				}
 			}

@@ -14,7 +14,7 @@ namespace LCA {
 		public readonly string name;
 		public readonly string fullName;
 		readonly Dictionary<Lane, RunePage> runePages = new Dictionary<Lane, RunePage>();
-		readonly Dictionary<Lane, LolAlytics> lolAlyticsInfo = new Dictionary<Lane, LolAlytics>();
+		public readonly Dictionary<Lane, LolAlytics> lolAlyticsInfo = new Dictionary<Lane, LolAlytics>();
 
 		Champion(int id, string name) {
 			this.id = id;
@@ -61,6 +61,8 @@ namespace LCA {
 		public static Lane LaneFromString(string partialLane) {
 			if (partialLane == "") {
 				return Lane.Default;
+			} else if (partialLane == "utility") {
+				partialLane = "support";
 			}
 
 			string simplePartialLane = SimplifyName(partialLane);
@@ -128,7 +130,7 @@ namespace LCA {
 			return true;
 		}
 
-		public bool TryGetRunePage(out RunePage runePage, Lane lane = Lane.Default) => runePages.TryGetValue(lane, out runePage) || lane != Lane.Default && runePages.TryGetValue(Lane.Default, out runePage);
+		public bool TryGetRunePage(Lane lane, out RunePage runePage) => runePages.TryGetValue(lane, out runePage) || lane != Lane.Default && runePages.TryGetValue(Lane.Default, out runePage);
 
 		public bool TryDeleteRunePage(Lane lane) {
 			if (runePages.Remove(lane)) {

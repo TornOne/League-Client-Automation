@@ -31,12 +31,15 @@ namespace LCA.Client {
 			while (true) {
 				try {
 					State.summonerId = (await GetJson("/lol-summoner/v1/current-summoner"))["summonerId"].Get<long>();
+					string[] version = (await GetJson("/lol-patch/v1/game-version")).Get<string>().Split(new[] { '.' }, 3);
+					State.currentVersion = $"{version[0]}.{version[1]}";
 					break;
 				} catch (Exception e) {
 					Console.WriteLine($"Initial HTTP request failed, retrying - {e.Message}");
 					await Task.Delay(3000);
 				}
 			}
+			Console.WriteLine($"Game version {State.currentVersion}");
 			Console.WriteLine($"Logged in as summoner {State.summonerId}");
 		}
 

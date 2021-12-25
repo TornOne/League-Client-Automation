@@ -24,6 +24,7 @@ namespace LCA {
 			{ 1400, Lane.UltimateSpellBook }
 		};
 		static readonly string[] smallRunes = new[] { "5008", "5005", "5007", "5008f", "5002f", "5003f", "5001", "5002", "5003" };
+		public static Dictionary<int, (int rank, double wr, double delta)> aramRanks;
 
 		static LolAlytics() {
 			foreach (KeyValuePair<int, Lane> pair in queueToLaneMap) {
@@ -31,16 +32,32 @@ namespace LCA {
 			}
 		}
 
-		public readonly string skillOrder, firstSkills;
+		public readonly string url, skillOrder, firstSkills;
 		public readonly int spell1Id, spell2Id;
 		public readonly RunePage runePage;
 
-		LolAlytics(string skillOrder, string firstSkills, int spell1Id, int spell2Id, RunePage runePage) {
+		LolAlytics(string url, string skillOrder, string firstSkills, int spell1Id, int spell2Id, RunePage runePage) {
+			this.url = url;
 			this.skillOrder = skillOrder;
 			this.firstSkills = firstSkills;
 			this.spell1Id = spell1Id;
 			this.spell2Id = spell2Id;
 			this.runePage = runePage;
+		}
+
+		public static async Task FetchAramRanks() {
+			aramRanks = new Dictionary<int, (int, double, double)>();
+			try {
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?patch={Client.State.currentVersion}&tier=platinum_plus&queue=450&region=all"));
+				double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
+
+				foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
+					double wr = champion.Value[3].Get<double>() / champion.Value[4].Get<int>();
+					aramRanks[int.Parse(champion.Key)] = (champion.Value[0].Get<int>(), wr, wr - avgWr);
+				}
+			} catch (Exception e) {
+				Console.WriteLine($"Fetching ARAM ranking data failed ({e.Message})\n{e.StackTrace}");
+			}
 		}
 
 		public static async Task<LolAlytics> FetchData(Lane lane, int championId) {
@@ -50,6 +67,10 @@ namespace LCA {
 				Json.Node data = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion" + queryString));
 				Json.Node skills = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion2" + queryString))["skills"];
 				int pickTotal = data["n"].Get<int>();
+
+				//URL
+				string laneString = lane.ToString().ToLower();
+				string url = $"https://lolalytics.com/lol/{Champion.idToChampion[championId].name}/{(lane <= Lane.Support ? "build/?lane=" + laneString : laneString + "/build/")}";
 
 				//Skill order
 				string bestSkillOrder = string.Empty;
@@ -129,8 +150,7 @@ namespace LCA {
 					bestRunes[i + 8] = bestRune;
 				}
 
-				Console.WriteLine("LolAlytics data successfully fetched");
-				return new LolAlytics(bestSkillOrder, firstSkills, bestSpells[0], bestSpells[1], new RunePage(bestRunes));
+				return new LolAlytics(url, bestSkillOrder, firstSkills, bestSpells[0], bestSpells[1], new RunePage(bestRunes));
 			} catch (Exception e) {
 				Console.WriteLine($"Fetching LolAlytics data failed ({e.Message})\n{e.StackTrace}");
 				return null;
