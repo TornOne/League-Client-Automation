@@ -79,7 +79,9 @@ namespace LCA.Client {
 			}
 		}
 
-		public static void PrintLolAlytics(LolAlytics lolAlytics) {
+		public static void PrintLolAlytics(LolAlytics lolAlytics, Champion champion, Lane lane) {
+			Console.WriteLine($"Selected {champion.fullName} ({lane})");
+
 			if (Config.openLolAlytics) {
 				System.Diagnostics.Process.Start(lolAlytics.url);
 			}

@@ -43,8 +43,8 @@ namespace LCA {
 			//ServicePointManager.ServerCertificateValidationCallback = (sender, cert, chain, errors) => true;
 
 			//Connect to the client via both HTTP and WebSocket
-			await Task.WhenAll(Client.Http.Initialize(credentials), Client.WebSocket.Initialize(credentials));
-			Console.WriteLine("Connected to client\n");
+			await Client.Http.Initialize(credentials); //HTTP connection must be first, as WebSocket subscriptions can fail if the client isn't loaded, which we can't check there.
+			await Client.WebSocket.Initialize(credentials);
 
 			//Listen to user input
 			await UserInput.ParseLoop();

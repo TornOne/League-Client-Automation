@@ -23,14 +23,15 @@ namespace LCA {
 					Console.WriteLine(Champion.SaveRunePage(command[1], Client.State.lastRunes, command.Length > 2 ? Champion.LaneFromString(command[2]) : Lane.Default) ? "Rune page successfully saved" : "No such champion found");
 				} else if (command[0] == "load") {
 					Champion champion = Champion.FindByPartialName(command[1]);
+					Lane lane = command.Length > 2 ? Champion.LaneFromString(command[2]) : Client.State.currentLane;
 					if (champion is null) {
 						Console.WriteLine("No such champion found");
 						continue;
 					}
-					LolAlytics lolAlytics = await Client.Actions.LoadChampion(champion, command.Length > 2 ? Champion.LaneFromString(command[2]) : Client.State.currentLane);
+					LolAlytics lolAlytics = await Client.Actions.LoadChampion(champion, lane);
 
 					if (Client.State.currentChampion != null) { //Check if we are in champion select
-						Client.Actions.PrintLolAlytics(lolAlytics);
+						Client.Actions.PrintLolAlytics(lolAlytics, champion, lane);
 					}
 				} else if (command[0] == "delete") {
 					Champion champion = Champion.FindByPartialName(command[1]);

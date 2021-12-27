@@ -31,6 +31,8 @@ namespace LCA.Client {
 			await Subscribe("OnJsonApiEvent_lol-champ-select_v1_current-champion");
 			await Subscribe("OnJsonApiEvent_lol-champ-select_v1_session");
 			//await Subscribe("OnJsonApiEvent"); //All events
+
+			Console.WriteLine("Connected to client\n");
 			_ = EventLoop().ContinueWith(task => Console.WriteLine($"Event loop terminated:\n{task.Exception.GetBaseException()}"));
 		}
 
@@ -102,7 +104,7 @@ namespace LCA.Client {
 							LolAlytics lolAlytics = await Actions.LoadChampion(champion, State.currentLane);
 
 							if (State.currentLane != Lane.ARAM) {
-								Actions.PrintLolAlytics(lolAlytics);
+								Actions.PrintLolAlytics(lolAlytics, champion, State.currentLane);
 							}
 						}
 					}
@@ -112,7 +114,7 @@ namespace LCA.Client {
 					if (eventType == "Create") {
 						State.currentLane = LolAlytics.queueToLaneMap.TryGetValue((await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>(), out Lane laneName) ? laneName : Lane.Default;
 
-						if (State.currentLane == Lane.Default) {
+						if (State.currentLane == Lane.Default) { //Only Summoners Rift has actual lanes
 							foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
 								if (teammate["summonerId"].Get<long>() == State.summonerId) {
 									State.currentLane = Champion.LaneFromString(teammate["assignedPosition"].Get<string>());
@@ -141,7 +143,7 @@ namespace LCA.Client {
 						}
 					} else if (eventType == "Delete") {
 						if (State.currentLane == Lane.ARAM && State.currentChampion.lolAlyticsInfo.TryGetValue(State.currentLane, out LolAlytics lolAlytics)) {
-							Actions.PrintLolAlytics(lolAlytics);
+							Actions.PrintLolAlytics(lolAlytics, State.currentChampion, State.currentLane);
 						}
 
 						State.currentChampion = null;
