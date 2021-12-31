@@ -114,12 +114,19 @@ namespace LCA.Client {
 					if (eventType == "Create") {
 						State.currentLane = LolAlytics.queueToLaneMap.TryGetValue((await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>(), out Lane laneName) ? laneName : Lane.Default;
 
-						if (State.currentLane == Lane.Default) { //Only Summoners Rift has actual lanes
+						if (State.currentLane == Lane.Default) {
+							//Only Summoners Rift has actual lanes
 							foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
 								if (teammate["summonerId"].Get<long>() == State.summonerId) {
 									State.currentLane = Champion.LaneFromString(teammate["assignedPosition"].Get<string>());
 									break;
 								}
+							}
+
+							//TODO: Add ban suggestions for other game modes
+							if (Config.banSuggestions > 0) {
+								await ListBanSuggestions(Lane.Default, "Suggested overall bans:");
+								await ListBanSuggestions(State.currentLane, $"Suggested bans for {State.currentLane}:");
 							}
 						}
 					}
@@ -129,15 +136,13 @@ namespace LCA.Client {
 							if (LolAlytics.aramRanks is null) {
 								await LolAlytics.FetchAramRanks();
 							}
-							if (LolAlytics.aramRanks.Count == 0) { //We have failed to fetch ARAM ranks in the past, lets not spam their server
-								continue;
-							}
-
-							foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
-								int id = teammate["championId"].Get<int>();
-								if (ourChampions.Add(id)) {
-									(int rank, double wr, double delta) = LolAlytics.aramRanks[id];
-									Console.WriteLine($"{Champion.idToChampion[id].fullName,-12} - Rank {rank,3}, WR: {wr:0.0%} ({(delta >= 0 ? "+" : "")}{delta:0.0%})");
+							if (LolAlytics.aramRanks.Count > 0) { //0 means we have failed to fetch ARAM ranks in the past, lets not spam their server
+								foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
+									int id = teammate["championId"].Get<int>();
+									if (ourChampions.Add(id)) {
+										(int rank, double wr, double delta) = LolAlytics.aramRanks[id];
+										Console.WriteLine($"{Champion.idToChampion[id].fullName,-12} - Rank {rank,3}, WR: {wr:0.0%} ({(delta >= 0 ? "+" : "")}{delta:0.0%})");
+									}
 								}
 							}
 						}
@@ -150,6 +155,20 @@ namespace LCA.Client {
 						ourChampions.Clear();
 						State.currentLane = Lane.Default;
 					}
+				}
+			}
+		}
+
+		static async Task ListBanSuggestions(Lane lane, string title) {
+			if (!LolAlytics.banSuggestions.TryGetValue(lane, out (int id, double pbi)[] topBans)) {
+				await LolAlytics.FetchBanChoices(lane);
+				topBans = LolAlytics.banSuggestions[lane];
+			}
+			if (topBans.Length > 0) { //0 means we have failed to fetch ban choices in the past, lets not spam their server
+				Console.WriteLine(title);
+				for (int i = 0; i < Config.banSuggestions; i++) {
+					(int id, double pbi) = LolAlytics.banSuggestions[lane][i];
+					Console.WriteLine($"{Champion.idToChampion[id].fullName,-12} - {pbi,2:0}");
 				}
 			}
 		}

@@ -16,5 +16,6 @@
     "Teleport",
     "Ghost",
     "Flash"
-  ]
+  ],
+  "banSuggestions": 3
 }

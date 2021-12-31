@@ -22,6 +22,7 @@ namespace LCA {
 			Spell.Ghost,
 			Spell.Flash
 		};
+		public static int banSuggestions = 3;
 
 		public static void Load() {
 			const string configPath = "config.json";
@@ -41,6 +42,7 @@ namespace LCA {
 				TrySetValue(nameof(launchGame), ref launchGame);
 				TrySetValue(nameof(openLolAlytics), ref openLolAlytics);
 				TrySetValue(nameof(setSummonerSpells), ref setSummonerSpells);
+				TrySetValue(nameof(banSuggestions), ref banSuggestions);
 
 				if (settings.TryGetValue(nameof(spellOrder), out Json.Node spellsNode) && spellsNode is Json.Array spells) {
 					for (int i = 0; i < spells.Count; i++) {
@@ -63,7 +65,8 @@ namespace LCA {
 				{ nameof(launchGame), launchGame },
 				{ nameof(openLolAlytics), openLolAlytics },
 				{ nameof(setSummonerSpells), setSummonerSpells },
-				{ nameof(spellOrder), Array.ConvertAll(spellOrder, spell => spell.ToString()) }
+				{ nameof(spellOrder), Array.ConvertAll(spellOrder, spell => spell.ToString()) },
+				{ nameof(banSuggestions), banSuggestions }
 			}, true));
 		}
 	}

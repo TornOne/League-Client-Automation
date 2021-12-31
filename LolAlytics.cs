@@ -24,6 +24,7 @@ namespace LCA {
 			{ 1400, Lane.UltimateSpellBook }
 		};
 		static readonly string[] smallRunes = new[] { "5008", "5005", "5007", "5008f", "5002f", "5003f", "5001", "5002", "5003" };
+		public static Dictionary<Lane, (int id, double pbi)[]> banSuggestions = new Dictionary<Lane, (int, double)[]>();
 		public static Dictionary<int, (int rank, double wr, double delta)> aramRanks;
 
 		static LolAlytics() {
@@ -43,6 +44,28 @@ namespace LCA {
 			this.spell1Id = spell1Id;
 			this.spell2Id = spell2Id;
 			this.runePage = runePage;
+		}
+
+		public static async Task FetchBanChoices(Lane lane) {
+			try {
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?lane={lane.ToString().ToLower()}&patch={Client.State.currentVersion}&tier=platinum_plus&queue=420&region=all"));
+				int allPicks = rankings["pick"].Get<int>();
+				double avgWr = rankings["win"].Get<double>() / allPicks;
+
+				Json.Object champions = (Json.Object)rankings["cid"];
+				(int id, double pbi)[] bans = new (int, double)[champions.Count];
+				int i = 0;
+				foreach (KeyValuePair<string, Json.Node> champion in champions) {
+					int picks = champion.Value[4].Get<int>();
+					//delta WR * pick rate / (1 - ban rate)
+					bans[i++] = (int.Parse(champion.Key), (champion.Value[3].Get<double>() / picks - avgWr) * picks / allPicks / (1 - champion.Value[6].Get<double>() * 0.01) * 1e5);
+				}
+				Array.Sort(bans, (a, b) => Math.Sign(b.pbi - a.pbi));
+				banSuggestions[lane] = bans;
+			} catch (Exception e) {
+				Console.WriteLine($"Fetching {lane} ranking data failed ({e.Message})\n{e.StackTrace}");
+				banSuggestions[lane] = Array.Empty<(int, double)>();
+			}
 		}
 
 		public static async Task FetchAramRanks() {
