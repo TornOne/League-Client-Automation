@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace LCA {
 	static class Config {
@@ -21,6 +22,14 @@ namespace LCA {
 			Spell.Teleport,
 			Spell.Ghost,
 			Spell.Flash
+		};
+		public static readonly Dictionary<Lane, Rank> queueRankMap = new Dictionary<Lane, Rank> {
+			{ Lane.Default, Rank.Platinum_Plus },
+			{ Lane.ARAM, Rank.Platinum_Plus },
+			{ Lane.URF, Rank.All },
+			{ Lane.OneForAll, Rank.All },
+			{ Lane.Nexus, Rank.All },
+			{ Lane.UltimateSpellBook, Rank.All }
 		};
 		public static int banSuggestions = 3;
 
@@ -54,6 +63,18 @@ namespace LCA {
 					}
 				}
 
+				if (settings.TryGetValue(nameof(queueRankMap), out Json.Node ranksNode) && ranksNode is Json.Object ranks) {
+					Queue<Action> updates = new Queue<Action>();
+					foreach (Lane queue in queueRankMap.Keys) {
+						if (ranks.TryGetValue(queue.ToString(), out Json.Node rankNode) && rankNode.TryGet(out string rankString) && Enum.TryParse(rankString, out Rank rank)) {
+							updates.Enqueue(() => queueRankMap[queue] = rank);
+						}
+					}
+					while (updates.Count > 0) {
+						updates.Dequeue()();
+					}
+				}
+
 				Console.WriteLine("Settings loaded");
 			} else {
 				Console.WriteLine("Settings not found, using defaults");
@@ -66,6 +87,7 @@ namespace LCA {
 				{ nameof(openLolAlytics), openLolAlytics },
 				{ nameof(setSummonerSpells), setSummonerSpells },
 				{ nameof(spellOrder), Array.ConvertAll(spellOrder, spell => spell.ToString()) },
+				{ nameof(queueRankMap), queueRankMap.ToDictionary(pair => pair.Key.ToString(), pair => pair.Value.ToString()) },
 				{ nameof(banSuggestions), banSuggestions }
 			}, true));
 		}

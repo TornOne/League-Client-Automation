@@ -16,5 +16,14 @@
     "Teleport",
     "Ghost",
     "Flash"
-  ]
+  ],
+  "queueRankMap": {
+    "Default": "Platinum_Plus",
+    "ARAM": "Platinum_Plus",
+    "URF": "All",
+    "OneForAll": "All",
+    "Nexus": "All",
+    "UltimateSpellBook": "All"
+  },
+  "banSuggestions": 3
 }

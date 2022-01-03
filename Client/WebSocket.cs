@@ -112,13 +112,14 @@ namespace LCA.Client {
 				//Observe champion select
 				} else if (endpoint == "OnJsonApiEvent_lol-champ-select_v1_session") {
 					if (eventType == "Create") {
-						State.currentLane = LolAlytics.queueToLaneMap.TryGetValue((await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>(), out Lane laneName) ? laneName : Lane.Default;
+						
+						State.currentLane = (Lane)(await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>();
 
 						if (State.currentLane == Lane.Default) {
 							//Only Summoners Rift has actual lanes
 							foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
 								if (teammate["summonerId"].Get<long>() == State.summonerId) {
-									State.currentLane = Champion.LaneFromString(teammate["assignedPosition"].Get<string>());
+									Enum.TryParse(teammate["assignedPosition"].Get<string>().ToLower(), out State.currentLane);
 									break;
 								}
 							}

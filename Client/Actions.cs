@@ -5,22 +5,23 @@ using System.Threading.Tasks;
 namespace LCA.Client {
 	static class Actions {
 		public static async Task<LolAlytics> LoadChampion(Champion champion, Lane lane) {
-			Task<LolAlytics> lolAlyticsTask = champion.GetLolAlytics(lane);
-			await Task.WhenAll(lolAlyticsTask, FreePages(2));
-			LolAlytics lolAlytics = await lolAlyticsTask;
+			//Runes
+			LolAlytics lolAlytics = await champion.GetLolAlytics(lane);
+			bool gotLolAlyticsPage = lolAlytics?.runePage != null;
+			bool gotPresetPage = champion.TryGetRunePage(lane, out RunePage runePage);
+			await FreePages((gotPresetPage ? 1 : 0) + (gotLolAlyticsPage ? 1 : 0));
 
-			if (lolAlytics?.runePage is null) {
+			if (!gotLolAlyticsPage) {
 				Console.WriteLine("LolAlytics rune page not found");
 			} else if (!await CreateRunePage(lolAlytics.runePage, $"{champion.fullName} {lane}")) {
 				Console.WriteLine("LolAlytics rune page loading failed");
 			}
 
-			if (champion.TryGetRunePage(lane, out RunePage runePage) &&
-				!await CreateRunePage(runePage, $"{champion.fullName} Custom")) {
+			if (gotPresetPage && !await CreateRunePage(runePage, $"{champion.fullName} Preset")) {
 				Console.WriteLine("Preset rune page loading failed");
 			}
 
-			if (lane <= Lane.Support && runePage != null && lolAlytics?.runePage != null) {
+			if (lane <= Lane.Support && gotPresetPage && gotLolAlyticsPage) {
 				int differingRuneCount = 0;
 				for (int i = 0; i < 6; i++) {
 					if (!Array.Exists(lolAlytics.runePage.runes, rune => rune == runePage.runes[i])) {
@@ -38,6 +39,7 @@ namespace LCA.Client {
 				}
 			}
 
+			//Spells
 			if (Config.setSummonerSpells && lolAlytics != null) {
 				await UpdateSummonerSpells(lolAlytics.spell1Id, lolAlytics.spell2Id);
 			}

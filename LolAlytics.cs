@@ -8,30 +8,9 @@ namespace LCA {
 		static readonly HttpClient http = new HttpClient() {
 			BaseAddress = new Uri("https://axe.lolalytics.com")
 		};
-		static readonly Dictionary<Lane, int> laneToQueueMap = new Dictionary<Lane, int>() {
-			{ Lane.Top, 420 },
-			{ Lane.Jungle, 420 },
-			{ Lane.Middle, 420 },
-			{ Lane.Bottom, 420 },
-			{ Lane.Support, 420 }
-		};
-		public static readonly Dictionary<int, Lane> queueToLaneMap = new Dictionary<int, Lane>() {
-			{ 420, Lane.Default },
-			{ 450, Lane.ARAM },
-			{ 900, Lane.URF },
-			{ 1020, Lane.OneForAll },
-			{ 1300, Lane.Nexus },
-			{ 1400, Lane.UltimateSpellBook }
-		};
 		static readonly string[] smallRunes = new[] { "5008", "5005", "5007", "5008f", "5002f", "5003f", "5001", "5002", "5003" };
 		public static Dictionary<Lane, (int id, double pbi)[]> banSuggestions = new Dictionary<Lane, (int, double)[]>();
 		public static Dictionary<int, (int rank, double wr, double delta)> aramRanks;
-
-		static LolAlytics() {
-			foreach (KeyValuePair<int, Lane> pair in queueToLaneMap) {
-				laneToQueueMap.Add(pair.Value, pair.Key);
-			}
-		}
 
 		public readonly string url, skillOrder, firstSkills;
 		public readonly int spell1Id, spell2Id;
@@ -85,15 +64,18 @@ namespace LCA {
 
 		public static async Task<LolAlytics> FetchData(Lane lane, int championId) {
 			try {
-				//TODO: Make tiers configurable in the config
-				string queryString = $"&p=d&v=1&cid={championId}&lane={(lane >= Lane.Top && lane <= Lane.Support ? lane.ToString().ToLower() : "default")}&tier={(lane <= Lane.ARAM ? "platinum_plus" : "all")}&queue={laneToQueueMap[lane]}&region=all";
+				bool isMainGameMode = lane <= Lane.Support;
+				Lane queue = isMainGameMode ? Lane.Default : lane;
+				string laneString = lane.ToString().ToLower();
+
+				//Fetch data
+				string queryString = $"&p=d&v=1&cid={championId}&lane={(isMainGameMode ? laneString : "default")}&tier={Config.queueRankMap[queue]}&queue={(int)queue}&region=all";
 				Json.Node data = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion" + queryString));
 				Json.Node skills = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion2" + queryString))["skills"];
 				int pickTotal = data["n"].Get<int>();
 
 				//URL
-				string laneString = lane.ToString().ToLower();
-				string url = $"https://lolalytics.com/lol/{Champion.idToChampion[championId].name}/{(lane <= Lane.Support ? "build/?lane=" + laneString : laneString + "/build/")}";
+				string url = $"https://lolalytics.com/lol/{Champion.idToChampion[championId].name}/{(isMainGameMode ? "build/?lane=" + laneString : laneString + "/build/")}";
 
 				//Skill order
 				string bestSkillOrder = string.Empty;
