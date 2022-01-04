@@ -1,6 +1,6 @@
 ﻿namespace LCA {
 	enum Lane {
-		Default = 420,
+		Default,
 		Top,
 		Jungle,
 		Middle,

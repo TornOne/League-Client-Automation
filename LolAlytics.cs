@@ -27,7 +27,7 @@ namespace LCA {
 
 		public static async Task FetchBanChoices(Lane lane) {
 			try {
-				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?lane={lane.ToString().ToLower()}&patch={Client.State.currentVersion}&tier={Config.queueRankMap[Lane.Default]}&queue={(int)Lane.Default}&region=all"));
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?lane={lane.ToString().ToLower()}&patch={Client.State.currentVersion}&tier={Config.queueRankMap[Lane.Default]}&queue=420&region=all"));
 				int allPicks = rankings["pick"].Get<int>();
 				double avgWr = rankings["win"].Get<double>() / allPicks;
 
@@ -50,7 +50,7 @@ namespace LCA {
 		public static async Task FetchAramRanks() {
 			aramRanks = new Dictionary<int, (int, double, double)>();
 			try {
-				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?patch={Client.State.currentVersion}&tier={Config.queueRankMap[Lane.ARAM]}&queue={(int)Lane.ARAM}&region=all"));
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?patch={Client.State.currentVersion}&tier={Config.queueRankMap[Lane.ARAM]}&queue=450&region=all"));
 				double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
 
 				foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
@@ -70,7 +70,7 @@ namespace LCA {
 				string laneString = lane.ToString().ToLower();
 
 				//Fetch data
-				string queryString = $"&p=d&v=1&cid={championId}&lane={(isMainGameMode ? laneString : "default")}&tier={rank}&queue={(int)queue}&region=all";
+				string queryString = $"&p=d&v=1&cid={championId}&lane={(isMainGameMode ? laneString : "default")}&tier={rank}&queue={(isMainGameMode ? 420 : (int)queue)}&region=all";
 				Json.Node data = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion" + queryString));
 				Json.Node skills = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion2" + queryString))["skills"];
 				int pickTotal = data["n"].Get<int>();
