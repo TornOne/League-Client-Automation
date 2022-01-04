@@ -29,21 +29,21 @@
 	}
 
 	enum Rank {
-		Unranked,
-		Iron,
-		Bronze,
-		Silver,
-		Gold,
-		Platinum,
-		Diamond,
-		Master,
-		Grandmaster,
-		Challenger,
-		All,
-		Gold_Plus,
-		Platinum_Plus,
-		Diamond_Plus,
-		D2_Plus,
-		Master_Plus
+		unranked,
+		iron,
+		bronze,
+		silver,
+		gold,
+		platinum,
+		diamond,
+		master,
+		grandmaster,
+		challenger,
+		all,
+		gold_plus,
+		platinum_plus,
+		diamond_plus,
+		d2_plus,
+		master_plus
 	}
 }

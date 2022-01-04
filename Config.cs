@@ -24,12 +24,12 @@ namespace LCA {
 			Spell.Flash
 		};
 		public static readonly Dictionary<Lane, Rank> queueRankMap = new Dictionary<Lane, Rank> {
-			{ Lane.Default, Rank.Platinum_Plus },
-			{ Lane.ARAM, Rank.Platinum_Plus },
-			{ Lane.URF, Rank.All },
-			{ Lane.OneForAll, Rank.All },
-			{ Lane.Nexus, Rank.All },
-			{ Lane.UltimateSpellBook, Rank.All }
+			{ Lane.Default, Rank.platinum_plus },
+			{ Lane.ARAM, Rank.platinum_plus },
+			{ Lane.URF, Rank.all },
+			{ Lane.OneForAll, Rank.all },
+			{ Lane.Nexus, Rank.all },
+			{ Lane.UltimateSpellBook, Rank.all }
 		};
 		public static int banSuggestions = 3;
 

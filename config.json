@@ -18,12 +18,12 @@
     "Flash"
   ],
   "queueRankMap": {
-    "Default": "Platinum_Plus",
-    "ARAM": "Platinum_Plus",
-    "URF": "All",
-    "OneForAll": "All",
-    "Nexus": "All",
-    "UltimateSpellBook": "All"
+    "Default": "platinum_plus",
+    "ARAM": "platinum_plus",
+    "URF": "all",
+    "OneForAll": "all",
+    "Nexus": "all",
+    "UltimateSpellBook": "all"
   },
   "banSuggestions": 3
 }
