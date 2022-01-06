@@ -161,11 +161,11 @@ namespace LCA.Client {
 		}
 
 		static async Task ListBanSuggestions(Lane lane, string title) {
-			if (!LolAlytics.banSuggestions.TryGetValue(lane, out (int id, double pbi)[] topBans)) {
+			if (!LolAlytics.banSuggestions.TryGetValue(lane, out List<(int id, double pbi)> topBans)) {
 				await LolAlytics.FetchBanChoices(lane);
 				topBans = LolAlytics.banSuggestions[lane];
 			}
-			if (topBans.Length > 0) { //0 means we have failed to fetch ban choices in the past, lets not spam their server
+			if (topBans.Count > 0) { //0 means we have failed to fetch ban choices in the past, lets not spam their server
 				Console.WriteLine(title);
 				for (int i = 0; i < Config.banSuggestions; i++) {
 					(int id, double pbi) = LolAlytics.banSuggestions[lane][i];

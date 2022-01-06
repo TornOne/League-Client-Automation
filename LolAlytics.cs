@@ -9,7 +9,7 @@ namespace LCA {
 			BaseAddress = new Uri("https://axe.lolalytics.com")
 		};
 		static readonly string[] smallRunes = new[] { "5008", "5005", "5007", "5008f", "5002f", "5003f", "5001", "5002", "5003" };
-		public static Dictionary<Lane, (int id, double pbi)[]> banSuggestions = new Dictionary<Lane, (int, double)[]>();
+		public static Dictionary<Lane, List<(int id, double pbi)>> banSuggestions = new Dictionary<Lane, List<(int, double)>>();
 		public static Dictionary<int, (int rank, double wr, double delta)> aramRanks;
 
 		public readonly string url, skillOrder, firstSkills;
@@ -31,19 +31,20 @@ namespace LCA {
 				int allPicks = rankings["pick"].Get<int>();
 				double avgWr = rankings["win"].Get<double>() / allPicks;
 
-				Json.Object champions = (Json.Object)rankings["cid"];
-				(int id, double pbi)[] bans = new (int, double)[champions.Count];
-				int i = 0;
-				foreach (KeyValuePair<string, Json.Node> champion in champions) {
+				List<(int id, double pbi)> bans = new List<(int, double)>();
+				foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
 					int picks = champion.Value[4].Get<int>();
+					if (picks == 0) {
+						continue;
+					}
 					//delta WR * pick rate / (1 - ban rate)
-					bans[i++] = (int.Parse(champion.Key), (champion.Value[3].Get<double>() / picks - avgWr) * picks / allPicks / (1 - champion.Value[6].Get<double>() * 0.01) * 1e5);
+					bans.Add((int.Parse(champion.Key), (champion.Value[3].Get<double>() / picks - avgWr) * picks / allPicks / (1 - champion.Value[6].Get<double>() * 0.01) * 1e5));
 				}
-				Array.Sort(bans, (a, b) => Math.Sign(b.pbi - a.pbi));
+				bans.Sort((a, b) => Math.Sign(b.pbi - a.pbi));
 				banSuggestions[lane] = bans;
 			} catch (Exception e) {
 				Console.WriteLine($"Fetching {lane} ranking data failed ({e.Message})\n{e.StackTrace}");
-				banSuggestions[lane] = Array.Empty<(int, double)>();
+				banSuggestions[lane] = new List<(int, double)>();
 			}
 		}
 
