@@ -1,3 +1,18 @@
+# About
+League Client Automation is a command line tool designed to assist you during champion select to make better choices and reduce the tedium of re-making your rune page every game.  
+It integrates with LolAlytics to fetch up-to-date statistics on champions, and uses a little bit of math to give you good suggestions. Ultimately, these are just suggestions, most features can be turned off, and you will always have the final say on what you do.  
+As of the time of writing, tools like this are okay to use in League, since they only assist you before the game begins. I will never include anything that I know might break the rules. Still, use at your own risk.
+
+Current features include:
+* Saving preset runes per champion, lane, and game mode to be loaded upon locking in.
+* Fetching meta runes and summoner spells per champion, lane, and game mode.
+* Suggesting bans for the team and for your lane.
+* Showing ranking (win rate) data for your team's champions in ARAM.
+
+Potential future features include:
+* Fetching meta item builds.
+* Counterpick suggestions.
+
 # Setup
 * Navigate under Releases and download the 7z file from the latest release.
 * Unzip it to a not write-protected location of your choosing, and run `Patcher.exe`.  
