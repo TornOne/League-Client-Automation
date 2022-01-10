@@ -14,7 +14,7 @@ namespace LCA {
 		public readonly string name;
 		public readonly string fullName;
 		readonly Dictionary<Lane, RunePage> runePages = new Dictionary<Lane, RunePage>();
-		public readonly Dictionary<Lane, LolAlytics> lolAlyticsInfo = new Dictionary<Lane, LolAlytics>();
+		readonly Dictionary<Lane, LolAlytics> lolAlyticsInfo = new Dictionary<Lane, LolAlytics>();
 
 		Champion(int id, string name) {
 			this.id = id;
@@ -106,20 +106,26 @@ namespace LCA {
 		static void Save() {
 			StreamWriter file = new StreamWriter(File.Create("runes.txt.temp"));
 
-			foreach (Champion champion in idToChampion.Values) {
-				foreach (KeyValuePair<Lane, RunePage> runePage in champion.runePages) {
-					file.WriteLine(string.Join("\t", champion.fullName, runePage.Key, champion.id, (int)runePage.Key));
-					runePage.Value.WriteToFile(file);
-					file.WriteLine();
-				}
-			}
+			IteratePresetPages((champion, runePage) => {
+				file.WriteLine(string.Join("\t", champion.fullName, runePage.Key, champion.id, (int)runePage.Key));
+				runePage.Value.WriteToFile(file);
+				file.WriteLine();
+			});
 
 			file.Close();
 			File.Delete("runes.txt");
 			File.Move("runes.txt.temp", "runes.txt");
 		}
 
-		public static bool SaveRunePage(string partialName, RunePage runePage, Lane lane = Lane.Default) {
+		public static void IteratePresetPages(Action<Champion, KeyValuePair<Lane, RunePage>> Action) {
+			foreach (Champion champion in idToChampion.Values) {
+				foreach (KeyValuePair <Lane, RunePage> runePage in champion.runePages) {
+					Action(champion, runePage);
+				}
+			}
+		}
+
+		public static bool SavePresetPages(string partialName, RunePage runePage, Lane lane = Lane.Default) {
 			Champion champion = FindByPartialName(partialName);
 			if (champion is null) {
 				return false;
@@ -130,15 +136,17 @@ namespace LCA {
 			return true;
 		}
 
-		public bool TryGetRunePage(Lane lane, out RunePage runePage) => runePages.TryGetValue(lane, out runePage) || lane != Lane.Default && runePages.TryGetValue(Lane.Default, out runePage);
+		public bool TryGetPresetPage(Lane lane, out RunePage runePage) => runePages.TryGetValue(lane, out runePage) || lane != Lane.Default && runePages.TryGetValue(Lane.Default, out runePage);
 
-		public bool TryDeleteRunePage(Lane lane) {
+		public bool TryDeletePresetPage(Lane lane) {
 			if (runePages.Remove(lane)) {
 				Save();
 				return true;
 			}
 			return false;
 		}
+
+		public bool TryGetLolAlytics(Lane lane, out LolAlytics lolAlytics) => lolAlyticsInfo.TryGetValue(lane, out lolAlytics);
 
 		public async Task<LolAlytics> GetLolAlytics(Lane lane) {
 			if (!lolAlyticsInfo.TryGetValue(lane, out LolAlytics lolAlyticsLane)) {

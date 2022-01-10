@@ -8,7 +8,7 @@ namespace LCA.Client {
 			//Runes
 			LolAlytics lolAlytics = await champion.GetLolAlytics(lane);
 			bool gotLolAlyticsPage = lolAlytics?.runePage != null;
-			bool gotPresetPage = champion.TryGetRunePage(lane, out RunePage runePage);
+			bool gotPresetPage = champion.TryGetPresetPage(lane, out RunePage runePage);
 			await FreePages((gotPresetPage ? 1 : 0) + (gotLolAlyticsPage ? 1 : 0));
 
 			if (!gotLolAlyticsPage) {

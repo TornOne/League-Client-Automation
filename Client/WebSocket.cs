@@ -148,7 +148,7 @@ namespace LCA.Client {
 							}
 						}
 					} else if (eventType == "Delete") {
-						if (State.currentLane == Lane.ARAM && State.currentChampion.lolAlyticsInfo.TryGetValue(State.currentLane, out LolAlytics lolAlytics)) {
+						if (State.currentLane == Lane.ARAM && State.currentChampion.TryGetLolAlytics(State.currentLane, out LolAlytics lolAlytics)) {
 							Actions.PrintLolAlytics(lolAlytics, State.currentChampion, State.currentLane);
 						}
 
