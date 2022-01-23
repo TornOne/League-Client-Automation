@@ -103,7 +103,7 @@ namespace LCA.Client {
 							State.currentChampion = champion;
 							LolAlytics lolAlytics = await Actions.LoadChampion(champion, State.currentLane);
 
-							if (State.currentLane != Lane.ARAM) {
+							if (State.currentLane != Lane.ARAM && lolAlytics != null) {
 								Actions.PrintLolAlytics(lolAlytics, champion, State.currentLane);
 							}
 						}

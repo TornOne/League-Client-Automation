@@ -76,6 +76,11 @@ namespace LCA {
 				Json.Node skills = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion2" + queryString))["skills"];
 				int pickTotal = data["n"].Get<int>();
 
+				if (pickTotal < 100) {
+					Console.WriteLine($"Insufficient amount of games ({pickTotal}) for meaningful data.");
+					return null;
+				}
+
 				//URL
 				string url = $"https://lolalytics.com/lol/{Champion.idToChampion[championId].name}/{(isMainGameMode ? $"build/?lane={laneString}&tier={rank}" : $"{laneString}/build/?tier={rank}")}";
 
