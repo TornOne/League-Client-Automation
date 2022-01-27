@@ -103,7 +103,7 @@ namespace LCA.Client {
 							State.currentChampion = champion;
 							LolAlytics lolAlytics = await Actions.LoadChampion(champion, State.currentLane);
 
-							if (State.currentLane != Lane.ARAM && lolAlytics != null) {
+							if (!State.isRandomMode && lolAlytics != null) {
 								Actions.PrintLolAlytics(lolAlytics, champion, State.currentLane);
 							}
 						}
@@ -112,6 +112,7 @@ namespace LCA.Client {
 				//Observe champion select
 				} else if (endpoint == "OnJsonApiEvent_lol-champ-select_v1_session") {
 					if (eventType == "Create") {
+						State.isRandomMode = contents["data"]["benchEnabled"].Get<bool>();
 						int queueId = (await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>();
 						State.currentLane = Enum.IsDefined(typeof(Lane), queueId) ? (Lane)queueId : Lane.Default;
 
@@ -133,25 +134,25 @@ namespace LCA.Client {
 					}
 
 					if (eventType == "Create" || eventType == "Update") {
-						if (State.currentLane == Lane.ARAM) {
-							if (LolAlytics.aramRanks is null) {
-								await LolAlytics.FetchAramRanks();
-							}
-							if (LolAlytics.aramRanks.Count > 0) { //0 means we have failed to fetch ARAM ranks in the past, lets not spam their server
+						if (State.isRandomMode) {
+							Dictionary<int, (int, double, double)> ranks = await LolAlytics.GetRanks(State.currentLane);
+							if (ranks.Count > 0) { //0 means we have failed to fetch ranks in the past, lets not spam their server
 								foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
 									int id = teammate["championId"].Get<int>();
 									if (ourChampions.Add(id)) {
-										(int rank, double wr, double delta) = LolAlytics.aramRanks[id];
+										(int rank, double wr, double delta) = ranks[id];
 										Console.WriteLine($"{Champion.idToChampion[id].fullName,-12} - Rank {rank,3}, WR: {wr:0.0%} ({(delta >= 0 ? "+" : "")}{delta:0.0%})");
 									}
 								}
 							}
 						}
 					} else if (eventType == "Delete") {
-						if (State.currentLane == Lane.ARAM && State.currentChampion.TryGetLolAlytics(State.currentLane, out LolAlytics lolAlytics)) {
+						if (State.isRandomMode && State.currentChampion.TryGetLolAlytics(State.currentLane, out LolAlytics lolAlytics)) {
 							Actions.PrintLolAlytics(lolAlytics, State.currentChampion, State.currentLane);
 						}
 
+						//Clear state
+						State.isRandomMode = false;
 						State.currentChampion = null;
 						ourChampions.Clear();
 						State.currentLane = Lane.Default;

@@ -10,7 +10,7 @@ namespace LCA {
 		};
 		static readonly string[] smallRunes = new[] { "5008", "5005", "5007", "5008f", "5002f", "5003f", "5001", "5002", "5003" };
 		public static Dictionary<Lane, List<(int id, double pbi)>> banSuggestions = new Dictionary<Lane, List<(int, double)>>();
-		public static Dictionary<int, (int rank, double wr, double delta)> aramRanks;
+		static readonly Dictionary<Lane, Dictionary<int, (int rank, double wr, double delta)>> ranks = new Dictionary<Lane, Dictionary<int, (int, double, double)>>();
 
 		public readonly string url, skillOrder, firstSkills;
 		public readonly int spell1Id, spell2Id;
@@ -48,19 +48,25 @@ namespace LCA {
 			}
 		}
 
-		public static async Task FetchAramRanks() {
-			aramRanks = new Dictionary<int, (int, double, double)>();
-			try {
-				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?patch={Client.State.currentVersion}&tier={Config.queueRankMap[Lane.ARAM]}&queue=450&region=all"));
-				double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
+		public static async Task<Dictionary<int, (int, double, double)>> GetRanks(Lane lane) {
+			if (!LolAlytics.ranks.TryGetValue(lane, out Dictionary<int, (int, double, double)> ranks)) {
+				ranks = new Dictionary<int, (int, double, double)>();
+				try {
+					Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?patch={Client.State.currentVersion}&tier={Config.queueRankMap[lane]}&queue={(int)lane}&region=all"));
+					double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
 
-				foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
-					double wr = champion.Value[3].Get<double>() / champion.Value[4].Get<int>();
-					aramRanks[int.Parse(champion.Key)] = (champion.Value[0].Get<int>(), wr, wr - avgWr);
+					foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
+						double wr = champion.Value[3].Get<double>() / champion.Value[4].Get<int>();
+						ranks[int.Parse(champion.Key)] = (champion.Value[0].Get<int>(), wr, wr - avgWr);
+					}
+				} catch (Exception e) {
+					Console.WriteLine($"Fetching {lane} ranking data failed ({e.Message})\n{e.StackTrace}");
 				}
-			} catch (Exception e) {
-				Console.WriteLine($"Fetching ARAM ranking data failed ({e.Message})\n{e.StackTrace}");
+
+				LolAlytics.ranks[lane] = ranks;
 			}
+
+			return ranks;
 		}
 
 		public static async Task<LolAlytics> FetchData(Lane lane, int championId) {
