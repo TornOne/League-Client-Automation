@@ -7,7 +7,7 @@ Current features include:
 * Saving preset runes per champion, lane, and game mode to be loaded upon locking in.
 * Fetching meta runes and summoner spells per champion, lane, and game mode.
 * Suggesting bans for the team and for your lane.
-* Showing ranking (win rate) data for your team's champions in ARAM.
+* Showing ranking (win rate) data for your team's champions in ARAM and ARURF.
 
 Potential future features include:
 * Fetching meta item builds.
@@ -27,7 +27,7 @@ You should get some lines of information as it is starting up (as well as some e
 You can type `help` to get an explanation of possible commands. I will not be duplicating the full help text here.  
 The program runs without user intervention for most of the time, but it is possible to save rune page presets as well as load champions manually (for example, if the automatic loading messes up or you decide to play a different lane than the one you were assigned).  
 The save/load syntax is `save/load champion lane`. Specifying the lane is optional. Both champion and lane names may be partial. Example: `load ez bot`  
-For saving preset rune pages, first create a new rune page or edit an existing one. Upon clicking "SAVE" in the in-game UI, the program will remember this rune page. You can then save this rune page to a champion e.g. `save lux`. When you next play / load this champion (in a matching lane), the saved rune page will be loaded alongside the LolAlytics page, prioritizing the saved page.
+For saving preset rune pages, first create a new rune page or edit an existing one. Upon clicking "SAVE" in the in-game UI, you will be notified with a "Runes updated" message, indicating the program has remembered this rune page. You can then save this rune page to a champion e.g. `save lux`. When you next play / load this champion (in a matching lane), the saved rune page will be loaded alongside the LolAlytics page, prioritizing the saved page.
 
 # Configuration
 The following is a list of all the configuration options along with explanations and possible values.
