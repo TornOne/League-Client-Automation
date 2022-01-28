@@ -9,8 +9,8 @@ namespace LCA {
 			BaseAddress = new Uri("https://axe.lolalytics.com")
 		};
 		static readonly string[] smallRunes = new[] { "5008", "5005", "5007", "5008f", "5002f", "5003f", "5001", "5002", "5003" };
-		public static Dictionary<Lane, List<(int id, double pbi)>> banSuggestions = new Dictionary<Lane, List<(int, double)>>();
-		static readonly Dictionary<Lane, Dictionary<int, (int rank, double wr, double delta)>> ranks = new Dictionary<Lane, Dictionary<int, (int, double, double)>>();
+		static readonly Dictionary<Lane, BanInfo[]> banSuggestions = new Dictionary<Lane, BanInfo[]>();
+		static readonly Dictionary<Lane, Dictionary<int, RankInfo>> ranks = new Dictionary<Lane, Dictionary<int, RankInfo>>();
 
 		public readonly string url, skillOrder, firstSkills;
 		public readonly int spell1Id, spell2Id;
@@ -25,39 +25,47 @@ namespace LCA {
 			this.runePage = runePage;
 		}
 
-		public static async Task FetchBanChoices(Lane lane) {
+		public static async Task<BanInfo[]> GetBanSuggestions(Lane lane) {
+			if (banSuggestions.TryGetValue(lane, out BanInfo[] topBans)) {
+				return topBans;
+			}
+
 			try {
 				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?lane={lane.ToString().ToLower()}&patch={Client.State.currentVersion}&tier={Config.queueRankMap[Lane.Default]}&queue=420&region=all"));
 				int allPicks = rankings["pick"].Get<int>();
 				double avgWr = rankings["win"].Get<double>() / allPicks;
 
-				List<(int id, double pbi)> bans = new List<(int, double)>();
+				List<BanInfo> bans = new List<BanInfo>();
 				foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
 					int picks = champion.Value[4].Get<int>();
 					if (picks == 0) {
 						continue;
 					}
 					//delta WR * pick rate / (1 - ban rate)
-					bans.Add((int.Parse(champion.Key), (champion.Value[3].Get<double>() / picks - avgWr) * picks / allPicks / (1 - champion.Value[6].Get<double>() * 0.01) * 1e5));
+					bans.Add(new BanInfo(int.Parse(champion.Key), (champion.Value[3].Get<double>() / picks - avgWr) * picks / allPicks / (1 - champion.Value[6].Get<double>() * 0.01) * 1e5));
 				}
 				bans.Sort((a, b) => Math.Sign(b.pbi - a.pbi));
-				banSuggestions[lane] = bans;
+
+				banSuggestions[lane] = new BanInfo[Config.banSuggestions];
+				bans.CopyTo(0, banSuggestions[lane], 0, Config.banSuggestions);
 			} catch (Exception e) {
 				Console.WriteLine($"Fetching {lane} ranking data failed ({e.Message})\n{e.StackTrace}");
-				banSuggestions[lane] = new List<(int, double)>();
+				banSuggestions[lane] = Array.Empty<BanInfo>();
 			}
+
+			return banSuggestions[lane];
 		}
 
-		public static async Task<Dictionary<int, (int, double, double)>> GetRanks(Lane lane) {
-			if (!LolAlytics.ranks.TryGetValue(lane, out Dictionary<int, (int, double, double)> ranks)) {
-				ranks = new Dictionary<int, (int, double, double)>();
+		public static async Task<Dictionary<int, RankInfo>> GetRanks(Lane lane) {
+			if (!LolAlytics.ranks.TryGetValue(lane, out Dictionary<int, RankInfo> ranks)) {
+				ranks = new Dictionary<int, RankInfo>();
 				try {
 					Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?patch={Client.State.currentVersion}&tier={Config.queueRankMap[lane]}&queue={(int)lane}&region=all"));
 					double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
 
 					foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
 						double wr = champion.Value[3].Get<double>() / champion.Value[4].Get<int>();
-						ranks[int.Parse(champion.Key)] = (champion.Value[0].Get<int>(), wr, wr - avgWr);
+						ranks[int.Parse(champion.Key)] = new RankInfo(champion.Value[0].Get<int>(), wr, wr - avgWr);
 					}
 				} catch (Exception e) {
 					Console.WriteLine($"Fetching {lane} ranking data failed ({e.Message})\n{e.StackTrace}");

@@ -44,6 +44,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="LolAlytics.cs" />
+    <Compile Include="Structs.cs" />
     <Compile Include="UserInput.cs" />
     <Compile Include="Client\WebSocket.cs" />
     <Compile Include="Program.cs" />

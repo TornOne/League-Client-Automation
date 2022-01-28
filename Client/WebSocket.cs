@@ -11,6 +11,12 @@ namespace LCA.Client {
 		static ClientWebSocket socket;
 		static byte[] receiveBuffer = new byte[1024];
 		static byte[] sendBuffer = new byte[1024];
+		static readonly Dictionary<string, Func<string, string, Json.Node, Task>> eventActions = new Dictionary<string, Func<string, string, Json.Node, Task>> {
+			{ "OnJsonApiEvent_lol-perks_v1_pages", RunePageEvent },
+			{ "OnJsonApiEvent_lol-champ-select_v1_current-champion", CurrentChampionEvent },
+			{ "OnJsonApiEvent_lol-champ-select_v1_session", LobbySessionEvent },
+			//{ "OnJsonApiEvent" , () => { } } //All events
+		};
 
 		public static async Task Initialize(string[] credentials) {
 			//Connect to the client
@@ -27,11 +33,9 @@ namespace LCA.Client {
 			}
 
 			//Subscribe to the events we care about and start the event listening (and responding) loop
-			await Subscribe("OnJsonApiEvent_lol-perks_v1_pages");
-			await Subscribe("OnJsonApiEvent_lol-champ-select_v1_current-champion");
-			await Subscribe("OnJsonApiEvent_lol-champ-select_v1_session");
-			//await Subscribe("OnJsonApiEvent"); //All events
-
+			foreach (string eventName in eventActions.Keys) {
+				await Subscribe(eventName);
+			}
 			Console.WriteLine("Connected to client\n");
 			_ = EventLoop().ContinueWith(task => Console.WriteLine($"Event loop terminated:\n{task.Exception.GetBaseException()}"));
 		}
@@ -73,104 +77,106 @@ namespace LCA.Client {
 		static Task Subscribe(string eventName) => SendMessage($"[5, \"{eventName}\"]");
 
 		static async Task EventLoop() {
-			HashSet<int> ourChampions = new HashSet<int>();
-
 			while (true) {
 				Json.Node eNode = await ReceiveMessage();
-				if (!(eNode is Json.Array e && e.Count > 2 &&
-					e[1].TryGet(out string endpoint) &&
+				if (eNode is Json.Array e && e.Count > 2 &&
+					e[1].TryGet(out string endpoint) && eventActions.TryGetValue(endpoint, out var Action) &&
 					e[2] is Json.Object contents &&
 					contents.TryGetValue("eventType", out Json.Node eventTypeJson) && eventTypeJson.TryGet(out string eventType) &&
-					contents.TryGetValue("uri", out Json.Node eventUriJson) && eventUriJson.TryGet(out string eventUri))) {
+					contents.TryGetValue("uri", out Json.Node eventUriJson) && eventUriJson.TryGet(out string eventUri) &&
+					contents.TryGetValue("data", out Json.Node data)) {
 
+					await Action(eventType, eventUri, data);
+				} else {
 					Console.WriteLine("Non-conformant event received:");
 					Console.WriteLine(eNode.ToString(true));
 					continue;
 				}
+			}
+		}
 
-				//Remember the last edited rune page
-				if (endpoint == "OnJsonApiEvent_lol-perks_v1_pages" &&
-					eventUri.StartsWith("/lol-perks/v1/pages/") &&
-					eventType == "Update") {
+		//Fired when a rune page is modified
+		//Remember the last edited rune page
+		static Task RunePageEvent(string eventType, string eventUri, Json.Node data) {
+			if (eventUri.StartsWith("/lol-perks/v1/pages/") && eventType == "Update") {
+				State.lastRunes = new RunePage(
+					data["primaryStyleId"].Get<int>(),
+					data["subStyleId"].Get<int>(),
+					new List<Json.Node>((Json.Array)data["selectedPerkIds"]).ConvertAll(id => id.Get<int>()));
+				Console.WriteLine("Runes updated");
+			}
+			return Task.CompletedTask;
+		}
 
-					Json.Node data = contents["data"];
-					State.lastRunes = new RunePage(data["primaryStyleId"].Get<int>(), data["subStyleId"].Get<int>(), new List<Json.Node>((Json.Array)data["selectedPerkIds"]).ConvertAll(id => id.Get<int>()));
+		//Fired when your currently locked-in champion changes
+		static async Task CurrentChampionEvent(string eventType, string eventUri, Json.Node data) {
+			if ((eventType == "Create" || eventType == "Update") &&
+				data.TryGet(out int championId) &&
+				Champion.idToChampion.TryGetValue(championId, out Champion champion) &&
+				champion != State.currentChampion) {
 
-				//Detect lock-ins
-				} else if (endpoint == "OnJsonApiEvent_lol-champ-select_v1_current-champion") {
-					if ((eventType == "Create" || eventType == "Update") && contents["data"].TryGet(out int championId) && Champion.idToChampion.TryGetValue(championId, out Champion champion)) {
-						if (champion != State.currentChampion) {
-							State.currentChampion = champion;
-							LolAlytics lolAlytics = await Actions.LoadChampion(champion, State.currentLane);
+				State.currentChampion = champion;
+				LolAlytics lolAlytics = await Actions.LoadChampion(champion, State.currentLane);
 
-							if (!State.isRandomMode && lolAlytics != null) {
-								Actions.PrintLolAlytics(lolAlytics, champion, State.currentLane);
-							}
-						}
-					}
-
-				//Observe champion select
-				} else if (endpoint == "OnJsonApiEvent_lol-champ-select_v1_session") {
-					if (eventType == "Create") {
-						State.isRandomMode = contents["data"]["benchEnabled"].Get<bool>();
-						int queueId = (await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>();
-						State.currentLane = Enum.IsDefined(typeof(Lane), queueId) ? (Lane)queueId : Lane.Default;
-
-						if (State.currentLane == Lane.Default) {
-							//Only Summoners Rift has actual lanes
-							foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
-								if (teammate["summonerId"].Get<long>() == State.summonerId) {
-									State.currentLane = Champion.LaneFromString(teammate["assignedPosition"].Get<string>());
-									break;
-								}
-							}
-
-							//TODO: Add ban suggestions for other game modes
-							if (Config.banSuggestions > 0) {
-								await ListBanSuggestions(Lane.Default, "Suggested overall bans:");
-								await ListBanSuggestions(State.currentLane, $"Suggested bans for {State.currentLane}:");
-							}
-						}
-					}
-
-					if (eventType == "Create" || eventType == "Update") {
-						if (State.isRandomMode) {
-							Dictionary<int, (int, double, double)> ranks = await LolAlytics.GetRanks(State.currentLane);
-							if (ranks.Count > 0) { //0 means we have failed to fetch ranks in the past, lets not spam their server
-								foreach (Json.Object teammate in (Json.Array)contents["data"]["myTeam"]) {
-									int id = teammate["championId"].Get<int>();
-									if (ourChampions.Add(id)) {
-										(int rank, double wr, double delta) = ranks[id];
-										Console.WriteLine($"{Champion.idToChampion[id].fullName,-12} - Rank {rank,3}, WR: {wr:0.0%} ({(delta >= 0 ? "+" : "")}{delta:0.0%})");
-									}
-								}
-							}
-						}
-					} else if (eventType == "Delete") {
-						if (State.isRandomMode && State.currentChampion.TryGetLolAlytics(State.currentLane, out LolAlytics lolAlytics)) {
-							Actions.PrintLolAlytics(lolAlytics, State.currentChampion, State.currentLane);
-						}
-
-						//Clear state
-						State.isRandomMode = false;
-						State.currentChampion = null;
-						ourChampions.Clear();
-						State.currentLane = Lane.Default;
-					}
+				if (!State.modeHasBench && lolAlytics != null) {
+					Actions.PrintLolAlytics(lolAlytics, champion, State.currentLane);
 				}
 			}
 		}
 
-		static async Task ListBanSuggestions(Lane lane, string title) {
-			if (!LolAlytics.banSuggestions.TryGetValue(lane, out List<(int id, double pbi)> topBans)) {
-				await LolAlytics.FetchBanChoices(lane);
-				topBans = LolAlytics.banSuggestions[lane];
+		//Fired for numerous events that occur during champion select
+		static async Task LobbySessionEvent(string eventType, string eventUri, Json.Node data) {
+			if (eventType == "Create") {
+				State.modeHasBench = data["benchEnabled"].Get<bool>();
+				int queueId = (await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>();
+				State.currentLane = Enum.IsDefined(typeof(Lane), queueId) ? (Lane)queueId : Lane.Default;
+
+				if (State.currentLane == Lane.Default) {
+					//Only Summoners Rift has actual lanes
+					foreach (Json.Object teammate in (Json.Array)data["myTeam"]) {
+						if (teammate["summonerId"].Get<long>() == State.summonerId) {
+							State.currentLane = Champion.LaneFromString(teammate["assignedPosition"].Get<string>());
+							break;
+						}
+					}
+
+					//TODO: Add ban suggestions for other game modes
+					if (Config.banSuggestions > 0) {
+						await ListBanSuggestions(Lane.Default, "Suggested overall bans:");
+						await ListBanSuggestions(State.currentLane, $"Suggested bans for {State.currentLane}:");
+					}
+				}
 			}
-			if (topBans.Count > 0) { //0 means we have failed to fetch ban choices in the past, lets not spam their server
+
+			if (eventType == "Create" || eventType == "Update") {
+				if (State.modeHasBench) {
+					Dictionary<int, RankInfo> ranks = await LolAlytics.GetRanks(State.currentLane);
+					if (ranks.Count > 0) { //0 means we have failed to fetch ranks in the past, lets not spam their server
+						foreach (Json.Object teammate in (Json.Array)data["myTeam"]) {
+							int id = teammate["championId"].Get<int>();
+							if (State.ourChampions.Add(id)) {
+								Console.WriteLine(ranks[id].ToString(id));
+							}
+						}
+					}
+				}
+			}
+			
+			if (eventType == "Delete") {
+				if (State.modeHasBench && State.currentChampion.TryGetLolAlytics(State.currentLane, out LolAlytics lolAlytics)) {
+					Actions.PrintLolAlytics(lolAlytics, State.currentChampion, State.currentLane);
+				}
+
+				State.Reset();
+			}
+		}
+
+		static async Task ListBanSuggestions(Lane lane, string title) {
+			BanInfo[] bans = await LolAlytics.GetBanSuggestions(lane);
+			if (bans.Length > 0) { //0 means we have failed to fetch ban choices in the past, lets not spam their server
 				Console.WriteLine(title);
-				for (int i = 0; i < Config.banSuggestions; i++) {
-					(int id, double pbi) = LolAlytics.banSuggestions[lane][i];
-					Console.WriteLine($"{Champion.idToChampion[id].fullName,-12} - {pbi,2:0}");
+				foreach (BanInfo ban in bans) {
+					Console.WriteLine(ban);
 				}
 			}
 		}
