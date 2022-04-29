@@ -42,7 +42,7 @@ namespace LCA.Client {
 
 		static Task SendMessage(string message) {
 			if (sendBuffer.Length < message.Length * 2) { //Ensure the buffer is large enough
-				sendBuffer = new byte[sendBuffer.Length * 2];
+				sendBuffer = new byte[Math.Max(sendBuffer.Length * 2, message.Length * 2)];
 			}
 			int length = Encoding.UTF8.GetBytes(message, 0, message.Length, sendBuffer, 0);
 			return socket.SendAsync(new ArraySegment<byte>(sendBuffer, 0, length), WebSocketMessageType.Text, true, CancellationToken.None);
@@ -155,7 +155,14 @@ namespace LCA.Client {
 						foreach (Json.Object teammate in (Json.Array)data["myTeam"]) {
 							int id = teammate["championId"].Get<int>();
 							if (State.ourChampions.Add(id)) {
-								Console.WriteLine(ranks[id].ToString(id));
+								RankInfo rank = ranks[id];
+								Console.ForegroundColor = rank.delta > 0.03 ? ConsoleColor.DarkGreen
+									: rank.delta > 0.01 ? ConsoleColor.Green
+									: rank.delta > -0.01 ? ConsoleColor.White
+									: rank.delta > -0.03 ? ConsoleColor.Red
+									: ConsoleColor.DarkRed;
+								Console.WriteLine(rank.ToString(id));
+								Console.ForegroundColor = ConsoleColor.Gray;
 							}
 						}
 					}
