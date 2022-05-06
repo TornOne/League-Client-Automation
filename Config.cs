@@ -32,6 +32,7 @@ namespace LCA {
 			{ Lane.UltimateSpellBook, Rank.all }
 		};
 		public static int banSuggestions = 3;
+		public static int maxItemSets = 60;
 
 		public static void Load() {
 			const string configPath = "config.json";
@@ -52,6 +53,7 @@ namespace LCA {
 				TrySetValue(nameof(openLolAlytics), ref openLolAlytics);
 				TrySetValue(nameof(setSummonerSpells), ref setSummonerSpells);
 				TrySetValue(nameof(banSuggestions), ref banSuggestions);
+				TrySetValue(nameof(maxItemSets), ref maxItemSets);
 
 				if (settings.TryGetValue(nameof(spellOrder), out Json.Node spellsNode) && spellsNode is Json.Array spells) {
 					for (int i = 0; i < spells.Count; i++) {
@@ -88,7 +90,8 @@ namespace LCA {
 				{ nameof(setSummonerSpells), setSummonerSpells },
 				{ nameof(spellOrder), Array.ConvertAll(spellOrder, spell => spell.ToString()) },
 				{ nameof(queueRankMap), queueRankMap.ToDictionary(pair => pair.Key.ToString(), pair => pair.Value.ToString()) },
-				{ nameof(banSuggestions), banSuggestions }
+				{ nameof(banSuggestions), banSuggestions },
+				{ nameof(maxItemSets), maxItemSets }
 			}, true));
 		}
 	}

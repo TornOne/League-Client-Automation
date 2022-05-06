@@ -43,6 +43,7 @@
     <Compile Include="Client\State.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="ItemSet.cs" />
     <Compile Include="LolAlytics.cs" />
     <Compile Include="Structs.cs" />
     <Compile Include="UserInput.cs" />

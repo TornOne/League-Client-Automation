@@ -15,14 +15,16 @@ namespace LCA {
 		public readonly string url, skillOrder, firstSkills;
 		public readonly int spell1Id, spell2Id;
 		public readonly RunePage runePage;
+		public readonly ItemSet itemSet;
 
-		LolAlytics(string url, string skillOrder, string firstSkills, int spell1Id, int spell2Id, RunePage runePage) {
+		LolAlytics(string url, string skillOrder, string firstSkills, int spell1Id, int spell2Id, RunePage runePage, ItemSet itemSet) {
 			this.url = url;
 			this.skillOrder = skillOrder;
 			this.firstSkills = firstSkills;
 			this.spell1Id = spell1Id;
 			this.spell2Id = spell2Id;
 			this.runePage = runePage;
+			this.itemSet = itemSet;
 		}
 
 		public static async Task<BanInfo[]> GetBanSuggestions(Lane lane) {
@@ -87,7 +89,8 @@ namespace LCA {
 				//Fetch data
 				string queryString = $"&p=d&v=1&cid={championId}&lane={(isMainGameMode ? laneString : "default")}&tier={rank}&queue={(isMainGameMode ? 420 : (int)queue)}&region=all";
 				Json.Node data = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion" + queryString));
-				Json.Node skills = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion2" + queryString))["skills"];
+				Json.Node data2 = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion2" + queryString));
+				Json.Node skills = data2["skills"];
 				int pickTotal = data["n"].Get<int>();
 
 				if (pickTotal < 100) {
@@ -176,7 +179,7 @@ namespace LCA {
 					bestRunes[i + 8] = bestRune;
 				}
 
-				return new LolAlytics(url, bestSkillOrder, firstSkills, bestSpells[0], bestSpells[1], new RunePage(bestRunes));
+				return new LolAlytics(url, bestSkillOrder, firstSkills, bestSpells[0], bestSpells[1], new RunePage(bestRunes), new ItemSet(championId, lane, data, data2));
 			} catch (Exception e) {
 				Console.WriteLine($"Fetching LolAlytics data failed ({e.Message})\n{e.StackTrace}");
 				return null;

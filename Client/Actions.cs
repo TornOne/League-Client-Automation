@@ -44,6 +44,11 @@ namespace LCA.Client {
 				await UpdateSummonerSpells(lolAlytics.spell1Id, lolAlytics.spell2Id);
 			}
 
+			//Items
+			if (lolAlytics != null) {
+				await lolAlytics.itemSet.AddSet();
+			}
+
 			return lolAlytics;
 		}
 

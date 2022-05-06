@@ -25,5 +25,6 @@
     "Nexus": "all",
     "UltimateSpellBook": "all"
   },
-  "banSuggestions": 3
+  "banSuggestions": 3,
+  "maxItemSets": 60
 }

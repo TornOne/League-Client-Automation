@@ -12,10 +12,10 @@ namespace LCA.Client {
 		static byte[] receiveBuffer = new byte[1024];
 		static byte[] sendBuffer = new byte[1024];
 		static readonly Dictionary<string, Func<string, string, Json.Node, Task>> eventActions = new Dictionary<string, Func<string, string, Json.Node, Task>> {
+			//{ "OnJsonApiEvent", AllEvents },
 			{ "OnJsonApiEvent_lol-perks_v1_pages", RunePageEvent },
 			{ "OnJsonApiEvent_lol-champ-select_v1_current-champion", CurrentChampionEvent },
-			{ "OnJsonApiEvent_lol-champ-select_v1_session", LobbySessionEvent },
-			//{ "OnJsonApiEvent" , () => { } } //All events
+			{ "OnJsonApiEvent_lol-champ-select_v1_session", LobbySessionEvent }
 		};
 
 		public static async Task Initialize(string[] credentials) {
@@ -93,6 +93,13 @@ namespace LCA.Client {
 					continue;
 				}
 			}
+		}
+
+		static Task AllEvents(string eventType, string eventUri, Json.Node data) {
+			Console.WriteLine(eventType);
+			Console.WriteLine(eventUri);
+			Console.WriteLine(data.ToString(true));
+			return Task.CompletedTask;
 		}
 
 		//Fired when a rune page is modified
