@@ -5,12 +5,11 @@ As of the time of writing, tools like this are okay to use in League, since they
 
 Current features include:
 * Saving preset runes per champion, lane, and game mode to be loaded upon locking in.
-* Fetching meta runes and summoner spells per champion, lane, and game mode.
+* Fetching meta runes, summoner spells, and items per champion, lane, and game mode.
 * Suggesting bans for the team and for your lane.
 * Showing ranking (win rate) data for your team's champions in ARAM and ARURF.
 
 Potential future features include:
-* Fetching meta item builds.
 * Counterpick suggestions.
 
 # Setup
@@ -41,3 +40,4 @@ Rearrange them to make sure your Summoner Spells will be assigned to the correct
 The possible rank values are: `unranked`, `iron`, `bronze`, `silver`, `gold`, `platinum`, `diamond`, `master`, `grandmaster`, `challenger`, `all`, `gold_plus`, `platinum_plus`, `diamond_plus`, `d2_plus`, `master_plus`.  
 There is no guarantee that all ranks will have sufficient data for the optimal functioning of the program, especially after a new patch has recently been released. I would personally recommend using the defaults, or using "all", or one of the "plus" ranks up to diamond.
 * `banSuggestions`: An integer value. Will show the specified number of ban suggestions at the beginning of a Draft lobby for both all lanes, and the lane you are playing. Setting it to 0 will disable this feature.
+* `maxItemSets`: An integer value. Will use up to this many item set slots for automatic item sets. The rest are left for manual item sets. Up to ~100 item set slots are available overall.
