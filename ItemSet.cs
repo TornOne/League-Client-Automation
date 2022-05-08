@@ -165,6 +165,8 @@ namespace LCA {
 
 			Client.Http.Response response = await Client.Http.PutJson($"/lol-item-sets/v1/item-sets/{Client.State.summonerId}/sets", $"{{\"accountId\":{setsJson["accountId"].Get<long>()},\"itemSets\":[{string.Join(",", ourSets)}],\"timestamp\":{setsJson["timestamp"].Get<long>()}}}");
 			if (!response.Success) {
+				//TODO: Starts failing at around 30 item sets due to the payload being too large.
+				//Might be able to fix by moving to WebSockets or if there is a way to send only partial item set updates
 				Console.WriteLine("Failed to update item sets");
 			}
 		}

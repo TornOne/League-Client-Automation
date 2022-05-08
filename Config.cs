@@ -32,7 +32,7 @@ namespace LCA {
 			{ Lane.UltimateSpellBook, Rank.all }
 		};
 		public static int banSuggestions = 3;
-		public static int maxItemSets = 60;
+		public static int maxItemSets = 12;
 
 		public static void Load() {
 			const string configPath = "config.json";

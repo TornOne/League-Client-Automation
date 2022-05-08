@@ -45,7 +45,7 @@ namespace LCA.Client {
 			}
 
 			//Items
-			if (lolAlytics != null) {
+			if (Config.maxItemSets > 0 && lolAlytics != null) {
 				await lolAlytics.itemSet.AddSet();
 			}
 
