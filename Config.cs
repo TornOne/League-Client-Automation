@@ -33,6 +33,8 @@ namespace LCA {
 		};
 		public static int banSuggestions = 3;
 		public static int maxItemSets = 12;
+		public static int minGamesChamp = 100;
+		public static int minGamesPatch = 500000;
 
 		public static void Load() {
 			const string configPath = "config.json";
@@ -54,6 +56,8 @@ namespace LCA {
 				TrySetValue(nameof(setSummonerSpells), ref setSummonerSpells);
 				TrySetValue(nameof(banSuggestions), ref banSuggestions);
 				TrySetValue(nameof(maxItemSets), ref maxItemSets);
+				TrySetValue(nameof(minGamesChamp), ref minGamesChamp);
+				TrySetValue(nameof(minGamesPatch), ref minGamesPatch);
 
 				if (settings.TryGetValue(nameof(spellOrder), out Json.Node spellsNode) && spellsNode is Json.Array spells) {
 					for (int i = 0; i < spells.Count; i++) {
@@ -91,7 +95,9 @@ namespace LCA {
 				{ nameof(spellOrder), Array.ConvertAll(spellOrder, spell => spell.ToString()) },
 				{ nameof(queueRankMap), queueRankMap.ToDictionary(pair => pair.Key.ToString(), pair => pair.Value.ToString()) },
 				{ nameof(banSuggestions), banSuggestions },
-				{ nameof(maxItemSets), maxItemSets }
+				{ nameof(maxItemSets), maxItemSets },
+				{ nameof(minGamesChamp), minGamesChamp },
+				{ nameof(minGamesPatch), minGamesPatch }
 			}, true));
 		}
 	}

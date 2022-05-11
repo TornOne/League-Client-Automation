@@ -33,6 +33,11 @@ namespace LCA.Client {
 					State.summonerId = (await GetJson("/lol-summoner/v1/current-summoner"))["summonerId"].Get<long>();
 					string[] version = (await GetJson("/lol-patch/v1/game-version")).Get<string>().Split(new[] { '.' }, 3);
 					State.currentVersion = $"{version[0]}.{version[1]}";
+					int gamesThisPatch = (await GetJson($"https://axe.lolalytics.com/tierlist/1/?patch={State.currentVersion}&tier={Config.queueRankMap[Lane.Default]}&queue=420&region=all"))["pick"].Get<int>();
+					if (gamesThisPatch < Config.minGamesPatch && int.TryParse(version[1], out int vMinor) && vMinor > 1) {
+						State.currentVersion = $"{version[0]}.{vMinor - 1}";
+						Console.WriteLine($"Not enough games played this patch ({gamesThisPatch}), using previous patch statistics.");
+					}
 					break;
 				} catch (Exception e) {
 					Console.WriteLine($"Initial HTTP request failed, retrying - {e.Message}");

@@ -36,7 +36,7 @@ namespace LCA.Client {
 			foreach (string eventName in eventActions.Keys) {
 				await Subscribe(eventName);
 			}
-			Console.WriteLine("Connected to client\n");
+			Console.WriteLine("Connected to client - Ready to use\n");
 			_ = EventLoop().ContinueWith(task => Console.WriteLine($"Event loop terminated:\n{task.Exception.GetBaseException()}"));
 		}
 

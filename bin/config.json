@@ -26,5 +26,7 @@
     "UltimateSpellBook": "all"
   },
   "banSuggestions": 3,
-  "maxItemSets": 12
+  "maxItemSets": 12,
+  "minGamesChamp": 100,
+  "minGamesPatch": 500000
 }

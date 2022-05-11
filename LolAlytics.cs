@@ -87,14 +87,14 @@ namespace LCA {
 				string laneString = lane.ToString().ToLower();
 
 				//Fetch data
-				string queryString = $"&p=d&v=1&cid={championId}&lane={(isMainGameMode ? laneString : "default")}&tier={rank}&queue={(isMainGameMode ? 420 : (int)queue)}&region=all";
+				string queryString = $"&p=d&v=1&patch={Client.State.currentVersion}&cid={championId}&lane={(isMainGameMode ? laneString : "default")}&tier={rank}&queue={(isMainGameMode ? 420 : (int)queue)}&region=all";
 				Json.Node data = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion" + queryString));
 				Json.Node data2 = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion2" + queryString));
 				Json.Node skills = data2["skills"];
 				int pickTotal = data["n"].Get<int>();
 
-				if (pickTotal < 100) {
-					Console.WriteLine($"Insufficient amount of games ({pickTotal}) for meaningful data.");
+				if (pickTotal < Config.minGamesChamp) {
+					Console.WriteLine($"Insufficient amount of games ({pickTotal}) played. Try loading your champion manually.");
 					return null;
 				}
 
