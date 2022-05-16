@@ -9,31 +9,20 @@ namespace LCA.Client {
 			LolAlytics lolAlytics = await champion.GetLolAlytics(lane);
 			bool gotLolAlyticsPage = lolAlytics?.runePage != null;
 			bool gotPresetPage = champion.TryGetPresetPage(lane, out RunePage runePage);
-			await FreePages((gotPresetPage ? 1 : 0) + (gotLolAlyticsPage ? 1 : 0));
+			await RunePage.Free((gotPresetPage ? 1 : 0) + (gotLolAlyticsPage ? 1 : 0));
 
 			if (!gotLolAlyticsPage) {
 				Console.WriteLine("LolAlytics rune page not found");
-			} else if (!await CreateRunePage(lolAlytics.runePage, $"{champion.fullName} {lane}")) {
+			} else if (!await lolAlytics.runePage.CreateRunePage($"{champion.fullName} {lane}")) {
 				Console.WriteLine("LolAlytics rune page loading failed");
 			}
 
-			if (gotPresetPage && !await CreateRunePage(runePage, $"{champion.fullName} Preset")) {
+			if (gotPresetPage && !await runePage.CreateRunePage($"{champion.fullName} Preset")) {
 				Console.WriteLine("Preset rune page loading failed");
 			}
 
 			if (lane <= Lane.Support && gotPresetPage && gotLolAlyticsPage) {
-				int differingRuneCount = 0;
-				for (int i = 0; i < 6; i++) {
-					if (!Array.Exists(lolAlytics.runePage.runes, rune => rune == runePage.runes[i])) {
-						differingRuneCount++;
-					}
-				}
-				for (int i = 6; i < 9; i++) {
-					if (runePage.runes[i] != lolAlytics.runePage.runes[i]) {
-						differingRuneCount++;
-					}
-				}
-
+				int differingRuneCount = lolAlytics.runePage.Compare(runePage);
 				if (differingRuneCount > 1) {
 					Console.WriteLine($"{differingRuneCount} runes differ between preset and LolAlytics");
 				}
@@ -51,31 +40,6 @@ namespace LCA.Client {
 
 			return lolAlytics;
 		}
-
-		static async Task FreePages(int amount) {
-			int maxPages = (await Http.GetJson("/lol-perks/v1/inventory"))["ownedPageCount"].Get<int>();
-			Json.Array pages = (Json.Array)await Http.GetJson("/lol-perks/v1/pages");
-
-			for (int i = maxPages - amount; i < pages.Count - 5; i++) {
-				await Http.Delete("/lol-perks/v1/pages/" + pages[i]["id"].Get<int>());
-			}
-		}
-
-		static async Task<bool> CreateRunePage(RunePage runePage, string pageName) => (await Http.PostJson("/lol-perks/v1/pages", Json.Serializer.Serialize(new Dictionary<string, object> {
-			{ "autoModifiedSelections", Array.Empty<int>() },
-			{ "current", true },
-			{ "id", 0 },
-			{ "isActive", true },
-			{ "isDeletable", true },
-			{ "isEditable", true },
-			{ "isValid", true },
-			{ "lastModified", (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds },
-			{ "name", pageName },
-			{ "order", 0 },
-			{ "primaryStyleId", runePage.primaryStyle },
-			{ "subStyleId", runePage.subStyle },
-			{ "selectedPerkIds", runePage.runes }
-		}))).Success;
 
 		static async Task UpdateSummonerSpells(int spell1Id, int spell2Id) {
 			if (!(await Http.PatchJson("/lol-champ-select/v1/session/my-selection", Json.Serializer.Serialize(new Dictionary<string, object> {

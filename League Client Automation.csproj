@@ -44,7 +44,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="ItemSet.cs" />
-    <Compile Include="LolAlytics.cs" />
+    <Compile Include="LolAlytics\LolAlytics.cs" />
     <Compile Include="Structs.cs" />
     <Compile Include="UserInput.cs" />
     <Compile Include="Client\WebSocket.cs" />
@@ -68,5 +68,6 @@
     </None>
     <None Include="Ledros.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

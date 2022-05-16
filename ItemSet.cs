@@ -46,7 +46,10 @@ namespace LCA {
 			int bootsPickedSecond = 0;
 			int bootsWonSecond = 0;
 			for (int i = 2; i <= 6; i++) {
-				foreach (KeyValuePair<string, Json.Node> pair in (Json.Object)data2["itemSets"][$"itemBootSet{i}"]) {
+				if (!(data2["itemSets"] as Json.Object).TryGetValue($"itemBootSet{i}", out Json.Node itemBootSet)) {
+					continue;
+				}
+				foreach (KeyValuePair<string, Json.Node> pair in (Json.Object)itemBootSet) {
 					string[] items = pair.Key.Split('_');
 					int picks = pair.Value[0].Get<int>();
 					int wins = pair.Value[1].Get<int>();
@@ -86,7 +89,7 @@ namespace LCA {
 			foreach (Json.Array item in itemsJson) {
 				int[] ids;
 				if (item[0].TryGet(out int id)) {
-					if (id == 3041) { //Do not suggest Mejai - it far too large an outlier
+					if (id == 3041) { //Do not suggest Mejai - it is far too large an outlier
 						continue;
 					}
 					ids = new[] { id };

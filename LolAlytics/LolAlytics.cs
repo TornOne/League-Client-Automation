@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace LCA {
-	class LolAlytics {
+	partial class LolAlytics {
 		static readonly HttpClient http = new HttpClient() {
 			BaseAddress = new Uri("https://axe.lolalytics.com")
 		};
@@ -33,7 +33,7 @@ namespace LCA {
 			}
 
 			try {
-				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?lane={lane.ToString().ToLower()}&patch={Client.State.currentVersion}&tier={Config.queueRankMap[Lane.Default]}&queue=420&region=all"));
+				Json.Node rankings = await GetRankings(lane, (Lane)420);
 				int allPicks = rankings["pick"].Get<int>();
 				double avgWr = rankings["win"].Get<double>() / allPicks;
 
@@ -58,24 +58,25 @@ namespace LCA {
 			return banSuggestions[lane];
 		}
 
-		public static async Task<Dictionary<int, RankInfo>> GetRanks(Lane lane) {
-			if (!LolAlytics.ranks.TryGetValue(lane, out Dictionary<int, RankInfo> ranks)) {
-				ranks = new Dictionary<int, RankInfo>();
-				try {
-					Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?patch={Client.State.currentVersion}&tier={Config.queueRankMap[lane]}&queue={(int)lane}&region=all"));
-					double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
-
-					foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
-						double wr = champion.Value[3].Get<double>() / champion.Value[4].Get<int>();
-						ranks[int.Parse(champion.Key)] = new RankInfo(champion.Value[0].Get<int>(), wr, wr - avgWr);
-					}
-				} catch (Exception e) {
-					Console.WriteLine($"Fetching {lane} ranking data failed ({e.Message})\n{e.StackTrace}");
-				}
-
-				LolAlytics.ranks[lane] = ranks;
+		public static async Task<Dictionary<int, RankInfo>> GetRanks(Lane queue) {
+			if (LolAlytics.ranks.TryGetValue(queue, out Dictionary<int, RankInfo> ranks)) {
+				return ranks;
 			}
 
+			ranks = new Dictionary<int, RankInfo>();
+			try {
+				Json.Node rankings = await GetRankings(Lane.Default, queue);
+				double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
+
+				foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
+					double wr = champion.Value[3].Get<double>() / champion.Value[4].Get<int>();
+					ranks[int.Parse(champion.Key)] = new RankInfo(champion.Value[0].Get<int>(), wr, wr - avgWr);
+				}
+			} catch (Exception e) {
+				Console.WriteLine($"Fetching {queue} ranking data failed ({e.Message})\n{e.StackTrace}");
+			}
+
+			LolAlytics.ranks[queue] = ranks;
 			return ranks;
 		}
 
@@ -150,20 +151,20 @@ namespace LCA {
 					if (Array.Exists(smallRunes, id => id == rune.Key)) {
 						continue;
 					}
-					(int category, int row, int column) = RunePage.idToTemplateIndex[int.Parse(rune.Key)];
+					RunePage.Index index = RunePage.idToIndex[int.Parse(rune.Key)];
 					Json.Array stats = (Json.Array)rune.Value;
 
-					if (row == 0) { //Keystone
-						keystone[category][column] = GetVal(stats[0]);
+					if (index.row == 0) { //Keystone
+						keystone[index.category][index.column] = GetVal(stats[0]);
 					} else {
-						primary[category, row - 1][column] = GetVal(stats[0]);
+						primary[index.category, index.row - 1][index.column] = GetVal(stats[0]);
 					}
 
 					if (stats.Count > 1) {
-						secondary[category, row - 1][column] = GetVal(stats[1]);
+						secondary[index.category, index.row - 1][index.column] = GetVal(stats[1]);
 					}
 				}
-				int[] bestRunes = GetBestRunes(keystone, primary, secondary);
+				int[] bestRunes = RunePage.GetBestRunes(keystone, primary, secondary);
 
 				for (int i = 0; i < 3; i++) {
 					int bestRune = 0;
@@ -176,7 +177,7 @@ namespace LCA {
 							bestRune = int.Parse(runeId.Substring(0, 4));
 						}
 					}
-					bestRunes[i + 8] = bestRune;
+					bestRunes[8 + i] = bestRune;
 				}
 
 				return new LolAlytics(url, bestSkillOrder, firstSkills, bestSpells[0], bestSpells[1], new RunePage(bestRunes), new ItemSet(championId, lane, data, data2));
@@ -186,11 +187,14 @@ namespace LCA {
 			}
 		}
 
+		#region Helper methods
 		static int GetWinCount(Json.Node pickCount, Json.Node winChance) => Convert.ToInt32(pickCount.Get<int>() * winChance.Get<double>() * 0.01);
 		// (pick chance) / (127/128 * pick chance + 1/128) * win chance	// Laplace smoothing, sort of
 		static double GetValue(int pickTotal, int pickCount, int winCount) => (double)(128 * winCount) / (127 * pickCount + pickTotal);
 		//static double GetValue(int pickTotal, int pickCount, double winChance) => (128 * pickCount * winChance) / (127 * pickCount + pickTotal);
 		//static double GetValue(double pickChance, double winChance) => (128 * pickChance * winChance) / (127 * pickChance + 1);
+
+		static async Task<Json.Node> GetRankings(Lane lane, Lane queue) => Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?lane={lane.ToString().ToLower()}&patch={Client.State.currentVersion}&tier={Config.queueRankMap[lane]}&queue={(int)queue}&region=all"));
 
 		static char ChooseNextSkill(int pickTotal, Dictionary<string, (int picks, int wins)> allSkills, string given) {
 			Dictionary<char, (int picks, int wins)> nextSkills = new Dictionary<char, (int, int)>() {
@@ -220,61 +224,6 @@ namespace LCA {
 
 			return bestSkill;
 		}
-
-		static int[] GetBestRunes(double[][] keystones, double[,][] primary, double[,][] secondary) {
-			(int[] ids, double totalValue)[] bestPrimaries = new (int[], double)[RunePage.categoryCount];
-			(int id1, int id2, double totalValue)[] bestSecondaries = new (int, int, double)[RunePage.categoryCount];
-
-			for (int category = 0; category < RunePage.categoryCount; category++) {
-				bestPrimaries[category].ids = new int[RunePage.rowCount];
-				for (int row = 0; row < RunePage.rowCount; row++) {
-					double value;
-					(bestPrimaries[category].ids[row], value) = GetBestRuneInRow(RunePage.runeIds[category, row], row == 0 ? keystones[category] : primary[category, row - 1]);
-					bestPrimaries[category].totalValue += value;
-				}
-
-				(int id, double value)[] secondaries = new (int, double)[RunePage.rowCount - 1];
-				for (int row = 0; row < secondaries.Length; row++) {
-					secondaries[row] = GetBestRuneInRow(RunePage.runeIds[category, row + 1], secondary[category, row]);
-				}
-				Array.Sort(secondaries, (a, b) => b.value.CompareTo(a.value)); //Reverse order
-				bestSecondaries[category].id1 = secondaries[0].id;
-				bestSecondaries[category].id2 = secondaries[1].id;
-				bestSecondaries[category].totalValue = secondaries[0].value + secondaries[1].value;
-			}
-
-			double bestValue = 0;
-			int[] bestRunes = new int[11];
-			for (int primaryCategory = 0; primaryCategory < RunePage.categoryCount; primaryCategory++) {
-				for (int secondaryCategory = 0; secondaryCategory < RunePage.categoryCount; secondaryCategory++) {
-					if (primaryCategory == secondaryCategory) {
-						continue;
-					}
-
-					double value = bestPrimaries[primaryCategory].totalValue + bestSecondaries[secondaryCategory].totalValue;
-					if (value > bestValue) {
-						bestValue = value;
-						bestRunes[0] = RunePage.styleIds[primaryCategory];
-						bestRunes[1] = RunePage.styleIds[secondaryCategory];
-						Array.Copy(bestPrimaries[primaryCategory].ids, 0, bestRunes, 2, RunePage.rowCount);
-						bestRunes[6] = bestSecondaries[secondaryCategory].id1;
-						bestRunes[7] = bestSecondaries[secondaryCategory].id2;
-					}
-				}
-			}
-			return bestRunes;
-		}
-
-		static (int id, double value) GetBestRuneInRow(int[] ids, double[] values) {
-			int bestRune = 0;
-			double bestValue = 0;
-			for (int column = 0; column < values.Length; column++) {
-				if (values[column] > bestValue) {
-					bestValue = values[column];
-					bestRune = ids[column];
-				}
-			}
-			return (bestRune, bestValue);
-		}
+		#endregion
 	}
 }
