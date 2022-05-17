@@ -33,7 +33,7 @@ namespace LCA {
 			}
 
 			try {
-				Json.Node rankings = await GetRankings(lane, (Lane)420);
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?{MakeQueryString(lane)}"));
 				int allPicks = rankings["pick"].Get<int>();
 				double avgWr = rankings["win"].Get<double>() / allPicks;
 
@@ -65,7 +65,7 @@ namespace LCA {
 
 			ranks = new Dictionary<int, RankInfo>();
 			try {
-				Json.Node rankings = await GetRankings(Lane.Default, queue);
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?{MakeQueryString(queue)}"));
 				double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
 
 				foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
@@ -82,13 +82,8 @@ namespace LCA {
 
 		public static async Task<LolAlytics> FetchData(Lane lane, int championId) {
 			try {
-				bool isMainGameMode = lane <= Lane.Support;
-				Lane queue = isMainGameMode ? Lane.Default : lane;
-				Rank rank = Config.queueRankMap[queue];
-				string laneString = lane.ToString().ToLower();
-
 				//Fetch data
-				string queryString = $"&p=d&v=1&patch={Client.State.currentVersion}&cid={championId}&lane={(isMainGameMode ? laneString : "default")}&tier={rank}&queue={(isMainGameMode ? 420 : (int)queue)}&region=all";
+				string queryString = $"&p=d&v=1&cid={championId}&{MakeQueryString(lane)}";
 				Json.Node data = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion" + queryString));
 				Json.Node data2 = Json.Node.Parse(await http.GetStringAsync("/mega/?ep=champion2" + queryString));
 				Json.Node skills = data2["skills"];
@@ -100,7 +95,9 @@ namespace LCA {
 				}
 
 				//URL
-				string url = $"https://lolalytics.com/lol/{Champion.idToChampion[championId].name}/{(isMainGameMode ? $"build/?lane={laneString}&tier={rank}" : $"{laneString}/build/?tier={rank}")}";
+				bool isMainGameMode = lane <= Lane.Support;
+				string laneString = lane.ToString().ToLower();
+				string url = $"https://lolalytics.com/lol/{Champion.idToChampion[championId].name}/{(isMainGameMode ? $"build/?lane={laneString}&" : $"{laneString}/build/?")}tier={Config.queueRankMap[(isMainGameMode ? Lane.Default : lane)]}&patch={Client.State.currentVersion}";
 
 				//Skill order
 				string bestSkillOrder = string.Empty;
@@ -194,7 +191,11 @@ namespace LCA {
 		//static double GetValue(int pickTotal, int pickCount, double winChance) => (128 * pickCount * winChance) / (127 * pickCount + pickTotal);
 		//static double GetValue(double pickChance, double winChance) => (128 * pickChance * winChance) / (127 * pickChance + 1);
 
-		static async Task<Json.Node> GetRankings(Lane lane, Lane queue) => Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?lane={lane.ToString().ToLower()}&patch={Client.State.currentVersion}&tier={Config.queueRankMap[lane]}&queue={(int)queue}&region=all"));
+		static string MakeQueryString(Lane lane) {
+			bool isMainGameMode = lane <= Lane.Support;
+			Lane queue = isMainGameMode ? Lane.Default : lane;
+			return $"lane={(isMainGameMode ? lane.ToString().ToLower() : "default")}&patch={Client.State.currentVersion}&tier={Config.queueRankMap[queue]}&queue={(queue == Lane.Default ? 420 : (int)queue)}&region=all";
+		}
 
 		static char ChooseNextSkill(int pickTotal, Dictionary<string, (int picks, int wins)> allSkills, string given) {
 			Dictionary<char, (int picks, int wins)> nextSkills = new Dictionary<char, (int, int)>() {
