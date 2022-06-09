@@ -17,22 +17,21 @@ namespace LCA {
 
 		readonly int champion;
 		readonly Lane lane;
-		readonly Block[] blocks;
+		readonly List<Block> blocks = new List<Block>(10);
 
 		public ItemSet(int champion, Lane lane, Json.Node data, Json.Node data2) {
 			this.champion = champion;
 			this.lane = lane;
 
+			blocks.Add(SelectBest("Start", (Json.Array)data2["startSet"], 4));
+			for (int i = 1; i <= 5; i++) {
+				if ((data as Json.Object).TryGetValue($"item{i}", out Json.Node items)) {
+					blocks.Add(SelectBest($"Item {i}", (Json.Array)items, 6));
+				}
+			}
+			blocks.Add(SelectBest("Overall", (Json.Array)data["popularItem"], 12));
+
 			if (champion == 69 || champion == 350) { //Cassiopeia and Yuumi don't use boots
-				blocks = new[] {
-					SelectBest("Start", (Json.Array)data2["startSet"], 4),
-					SelectBest("Item 1", (Json.Array)data["item1"], 6),
-					SelectBest("Item 2", (Json.Array)data["item2"], 6),
-					SelectBest("Item 3", (Json.Array)data["item3"], 6),
-					SelectBest("Item 4", (Json.Array)data["item4"], 6),
-					SelectBest("Item 5", (Json.Array)data["item5"], 6),
-					SelectBest("Overall", (Json.Array)data["popularItem"], 12)
-				};
 				return;
 			}
 
@@ -64,18 +63,7 @@ namespace LCA {
 			}
 			double bootsDiff = (double)(128 * bootsWonFirst) / (128 * bootsPickedFirst + bootsPickedSecond) - (double)(128 * bootsWonSecond) / (128 * bootsPickedSecond + bootsPickedFirst);
 
-			Block item1 = SelectBest("Item 1", (Json.Array)data["item1"], 6);
-			Block boots = SelectBest($"Boots +{Math.Abs(bootsDiff):0%} {(bootsDiff > 0 ? "1st" : "2nd")}", (Json.Array)data["boots"], 6);
-			blocks = new[] {
-				SelectBest("Start", (Json.Array)data2["startSet"], 4),
-				bootsDiff > 0 ? boots : item1,
-				bootsDiff > 0 ? item1 : boots,
-				SelectBest("Item 2", (Json.Array)data["item2"], 6),
-				SelectBest("Item 3", (Json.Array)data["item3"], 6),
-				SelectBest("Item 4", (Json.Array)data["item4"], 6),
-				SelectBest("Item 5", (Json.Array)data["item5"], 6),
-				SelectBest("Overall", (Json.Array)data["popularItem"], 12)
-			};
+			blocks.Insert(bootsDiff > 0 ? 1 : 2, SelectBest($"Boots +{Math.Abs(bootsDiff):0%} {(bootsDiff > 0 ? "1st" : "2nd")}", (Json.Array)data["boots"], 6));
 		}
 
 		//Select all items that have at least some % of the value of the best item
@@ -131,7 +119,7 @@ namespace LCA {
 			string newSet = Json.Serializer.Serialize(new Dictionary<string, object> {
 				{ "associatedChampions", new[] { champion } },
 				{ "associatedMaps", Array.Empty<int>() },
-				{ "blocks", Array.ConvertAll(blocks, block => new Dictionary<string, object> {
+				{ "blocks", blocks.ConvertAll(block => new Dictionary<string, object> {
 					{ "hideIfSummonerSpell", string.Empty },
 					{ "items", Array.ConvertAll(block.items, item => new Dictionary<string, object> {
 						{ "count", 1 },
