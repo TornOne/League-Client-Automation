@@ -118,6 +118,7 @@
 163	Taliyah
 164	Camille
 166	Akshan
+200	Bel'Veth
 201	Braum
 202	Jhin
 203	Kindred
