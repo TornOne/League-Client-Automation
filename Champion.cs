@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LCA {
+	//http://ddragon.leagueoflegends.com/cdn/12.11.1/data/en_US/champion.json
 	class Champion {
 		static readonly Dictionary<string, int> simpleNameToId = new Dictionary<string, int>();
 		static readonly Dictionary<int, string> idToFullName = new Dictionary<int, string>();

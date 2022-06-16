@@ -1,4 +1,5 @@
 ﻿namespace LCA {
+	//https://raw.communitydragon.org/12.11/plugins/rcp-be-lol-game-data/global/default/v1/queues.json
 	enum Lane {
 		Default,
 		Top,
@@ -13,6 +14,7 @@
 		UltimateSpellBook = 1400
 	}
 
+	//http://ddragon.leagueoflegends.com/cdn/12.11.1/data/en_US/summoner.json
 	enum Spell {
 		Cleanse = 1,
 		Exhaust = 3,

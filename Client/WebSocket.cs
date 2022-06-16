@@ -163,10 +163,10 @@ namespace LCA.Client {
 							int id = teammate["championId"].Get<int>();
 							if (State.ourChampions.Add(id)) {
 								RankInfo rank = ranks[id];
-								Console.ForegroundColor = rank.delta > 0.03 ? ConsoleColor.DarkGreen
-									: rank.delta > 0.01 ? ConsoleColor.Green
-									: rank.delta > -0.01 ? ConsoleColor.White
-									: rank.delta > -0.03 ? ConsoleColor.Red
+								Console.ForegroundColor = rank.delta > 0.035 ? ConsoleColor.DarkGreen
+									: rank.delta > 0.015 ? ConsoleColor.Green
+									: rank.delta > -0.015 ? ConsoleColor.White
+									: rank.delta > -0.035 ? ConsoleColor.Red
 									: ConsoleColor.DarkRed;
 								Console.WriteLine(rank.ToString(id));
 								Console.ForegroundColor = ConsoleColor.Gray;
