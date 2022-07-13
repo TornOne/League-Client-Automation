@@ -1,7 +1,7 @@
 {
   "installPath": "C:\/Program Files\/Riot Games\/League of Legends\/",
   "launchGame": false,
-  "openLolAlytics": true,
+  "openLolAlytics": false,
   "setSummonerSpells": true,
   "spellOrder": [
     "Placeholder",
