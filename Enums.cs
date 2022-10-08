@@ -1,5 +1,6 @@
 ﻿namespace LCA {
 	//https://raw.communitydragon.org/12.11/plugins/rcp-be-lol-game-data/global/default/v1/queues.json
+	//https://static.developer.riotgames.com/docs/lol/queues.json
 	enum Lane {
 		Default,
 		Top,
@@ -8,10 +9,11 @@
 		Bottom,
 		Support,
 		ARAM = 450,
-		URF = 900,
+		ARURF = 900,
 		OneForAll = 1020,
 		Nexus = 1300,
-		UltimateSpellBook = 1400
+		UltimateSpellBook = 1400,
+		URF = 1900
 	}
 
 	//http://ddragon.leagueoflegends.com/cdn/12.11.1/data/en_US/summoner.json
