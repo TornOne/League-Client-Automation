@@ -151,7 +151,7 @@ namespace LCA {
 			int maxPages = (await Client.Http.GetJson("/lol-perks/v1/inventory"))["ownedPageCount"].Get<int>();
 			Json.Array pages = (Json.Array)await Client.Http.GetJson("/lol-perks/v1/pages");
 
-			for (int i = maxPages - amount; i < pages.Count - 5; i++) {
+			for (int i = maxPages - amount; i < pages.Count; i++) {
 				await Client.Http.Delete("/lol-perks/v1/pages/" + pages[i]["id"].Get<int>());
 			}
 		}
