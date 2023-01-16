@@ -29,7 +29,8 @@ namespace LCA {
 			{ Lane.URF, Rank.all },
 			{ Lane.OneForAll, Rank.all },
 			{ Lane.Nexus, Rank.all },
-			{ Lane.UltimateSpellBook, Rank.all }
+			{ Lane.UltimateSpellBook, Rank.all },
+			{ Lane.ARURF, Rank.all }
 		};
 		public static int banSuggestions = 3;
 		public static int maxItemSets = 12;

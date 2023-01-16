@@ -23,7 +23,8 @@
     "URF": "all",
     "OneForAll": "all",
     "Nexus": "all",
-    "UltimateSpellBook": "all"
+    "UltimateSpellBook": "all",
+    "ARURF": "all"
   },
   "banSuggestions": 3,
   "maxItemSets": 12,
