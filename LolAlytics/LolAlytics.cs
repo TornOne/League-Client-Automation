@@ -33,7 +33,7 @@ namespace LCA {
 			}
 
 			try {
-				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?{MakeQueryString(lane)}"));
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/2/?{MakeQueryString(lane)}"));
 				int allPicks = rankings["pick"].Get<int>();
 				double avgWr = rankings["win"].Get<double>() / allPicks;
 
@@ -65,7 +65,7 @@ namespace LCA {
 
 			ranks = new Dictionary<int, RankInfo>();
 			try {
-				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?{MakeQueryString(queue)}"));
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/2/?{MakeQueryString(queue)}"));
 				double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
 
 				foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
