@@ -29,7 +29,7 @@
 		Ignite = 14,
 		Barrier = 21,
 		Mark = 32,
-		Placeholder = 54,
+		Placeholder = 54
 	}
 
 	enum Rank {
@@ -39,6 +39,7 @@
 		silver,
 		gold,
 		platinum,
+		emerald,
 		diamond,
 		master,
 		grandmaster,
@@ -46,6 +47,7 @@
 		all,
 		gold_plus,
 		platinum_plus,
+		emerald_plus,
 		diamond_plus,
 		d2_plus,
 		master_plus

@@ -24,18 +24,18 @@ namespace LCA {
 			Spell.Flash
 		};
 		public static readonly Dictionary<Lane, Rank> queueRankMap = new Dictionary<Lane, Rank> {
-			{ Lane.Default, Rank.platinum_plus },
-			{ Lane.ARAM, Rank.platinum_plus },
-			{ Lane.URF, Rank.all },
-			{ Lane.OneForAll, Rank.all },
-			{ Lane.Nexus, Rank.all },
-			{ Lane.UltimateSpellBook, Rank.all },
-			{ Lane.ARURF, Rank.all }
+			{ Lane.Default, Rank.emerald_plus },
+			{ Lane.ARAM, Rank.emerald_plus },
+			{ Lane.URF, Rank.platinum_plus },
+			{ Lane.OneForAll, Rank.platinum_plus },
+			{ Lane.Nexus, Rank.platinum_plus },
+			{ Lane.UltimateSpellBook, Rank.platinum_plus },
+			{ Lane.ARURF, Rank.platinum_plus }
 		};
 		public static int banSuggestions = 3;
 		public static int maxItemSets = 12;
 		public static int minGamesChamp = 100;
-		public static int minGamesPatch = 500000;
+		public static int minGamesPatch = 250000;
 
 		public static void Load() {
 			const string configPath = "config.json";

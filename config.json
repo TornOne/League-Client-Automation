@@ -18,16 +18,16 @@
     "Flash"
   ],
   "queueRankMap": {
-    "Default": "platinum_plus",
-    "ARAM": "platinum_plus",
-    "URF": "all",
-    "OneForAll": "all",
-    "Nexus": "all",
-    "UltimateSpellBook": "all",
-    "ARURF": "all"
+    "Default": "emerald_plus",
+    "ARAM": "emerald_plus",
+    "URF": "platinum_plus",
+    "OneForAll": "platinum_plus",
+    "Nexus": "platinum_plus",
+    "UltimateSpellBook": "platinum_plus",
+    "ARURF": "platinum_plus"
   },
   "banSuggestions": 3,
   "maxItemSets": 12,
   "minGamesChamp": 100,
-  "minGamesPatch": 500000
+  "minGamesPatch": 250000
 }
