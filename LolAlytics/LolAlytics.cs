@@ -33,7 +33,7 @@ namespace LCA {
 			}
 
 			try {
-				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/2/?{MakeQueryString(lane)}"));
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?{MakeQueryString(lane)}"));
 				int allPicks = rankings["pick"].Get<int>();
 				double avgWr = rankings["win"].Get<double>() / allPicks;
 
