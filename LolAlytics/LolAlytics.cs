@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace LCA {
 	partial class LolAlytics {
 		static readonly HttpClient http = new HttpClient() {
-			BaseAddress = new Uri("https://axe.lolalytics.com")
+			BaseAddress = new Uri("https://ax.lolalytics.com")
 		};
 		static readonly string[] smallRunes = new[] { "5008", "5005", "5007", "5008f", "5002f", "5003f", "5001", "5002", "5003" };
 		static readonly Dictionary<Lane, BanInfo[]> banSuggestions = new Dictionary<Lane, BanInfo[]>();
@@ -65,7 +65,7 @@ namespace LCA {
 
 			ranks = new Dictionary<int, RankInfo>();
 			try {
-				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/2/?{MakeQueryString(queue)}"));
+				Json.Node rankings = Json.Node.Parse(await http.GetStringAsync($"/tierlist/1/?{MakeQueryString(queue)}"));
 				double avgWr = rankings["win"].Get<double>() / rankings["pick"].Get<int>();
 
 				foreach (KeyValuePair<string, Json.Node> champion in (Json.Object)rankings["cid"]) {
