@@ -125,6 +125,7 @@
 221	Zeri
 222	Jinx
 223	Tahm Kench
+233	Briar
 234	Viego
 235	Senna
 236	Lucian
