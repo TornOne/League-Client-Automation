@@ -11,13 +11,17 @@ namespace LCA.Client {
 			bool gotPresetPage = champion.TryGetPresetPage(lane, out RunePage runePage);
 			await RunePage.Free((gotPresetPage ? 1 : 0) + (gotLolAlyticsPage ? 1 : 0));
 
+			if (lane > Lane.Support && gotPresetPage && !await runePage.CreateRunePage($"{champion.fullName} Preset")) {
+				Console.WriteLine("Preset rune page loading failed");
+			}
+
 			if (!gotLolAlyticsPage) {
 				Console.WriteLine("LolAlytics rune page not found");
 			} else if (!await lolAlytics.runePage.CreateRunePage($"{champion.fullName} {lane}")) {
 				Console.WriteLine("LolAlytics rune page loading failed");
 			}
 
-			if (gotPresetPage && !await runePage.CreateRunePage($"{champion.fullName} Preset")) {
+			if (lane <= Lane.Support && gotPresetPage && !await runePage.CreateRunePage($"{champion.fullName} Preset")) {
 				Console.WriteLine("Preset rune page loading failed");
 			}
 
