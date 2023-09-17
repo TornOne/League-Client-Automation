@@ -77,8 +77,8 @@ namespace LCA {
 		static Block SelectBest(string nameBase, Json.Array itemsJson, int maxItems) {
 			double SmoothPR(double pickRate) => 128 * pickRate / (127 * pickRate + 1);
 
-			List<(int[] ids, double value, int rank)> items = new List<(int[], double, int)>(itemsJson.Count);
-			int count = 0;
+			double maxPickRate = itemsJson[0][2].Get<double>() * 0.01;
+			List<(int[] ids, double value, double pr)> items = new List<(int[], double, double)>(itemsJson.Count);
 			foreach (Json.Array item in itemsJson) {
 				int[] ids;
 				if (item[0].TryGet(out int id)) {
@@ -90,7 +90,8 @@ namespace LCA {
 					string idString = item[0].Get<string>();
 					ids = idString == string.Empty ? Array.Empty<int>() : Array.ConvertAll(idString.Split('_'), int.Parse);
 				}
-				items.Add((ids, SmoothPR(item[2].Get<double>() * 0.01) * item[1].Get<double>() * 0.01, count++));
+				double pr = item[2].Get<double>() * 0.01;
+				items.Add((ids, SmoothPR(pr) * item[1].Get<double>() * 0.01, pr));
 			}
 			items.Sort((a, b) => Math.Sign(b.value - a.value));
 
@@ -99,15 +100,15 @@ namespace LCA {
 			List<int> bestItems = new List<int>(maxItems);
 			double highestValue = items[0].value;
 			for (int i = 0; i < items.Count; i++) {
-				(int[] ids, double value, int rank) = items[i];
+				(int[] ids, double value, double pr) = items[i];
 				if (value < highestValue * (Math.Sqrt(48d / maxItems * i + 1) + 1) / 8) {
 					break;
 				}
 				bestItems.AddRange(ids);
-				int rankDiff = rank - i;
-				string suffix = rankDiff < 1 ? "" :
-					rankDiff < 2 ? "¹" :
-					rankDiff < 3 ? "²" :
+				double prDiff = Math.Log(maxPickRate / pr, 2);
+				string suffix = prDiff < 0.5 ? "" :
+					prDiff < 1.5 ? "¹" :
+					prDiff < 2.5 ? "²" :
 					"³";
 				name.Append($"{(value - 0.5) * 100:0.0}{suffix}, ");
 			}
