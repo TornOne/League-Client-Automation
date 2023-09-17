@@ -1,3 +1,5 @@
+<div align="justify">
+
 # About
 League Client Automation is a command line tool designed to assist you during champion select to make better choices and reduce the tedium of re-making your rune page every game.  
 It integrates with LolAlytics to fetch up-to-date statistics on champions, and uses a little bit of math to give you good suggestions. Ultimately, these are just suggestions, most features can be turned off, and you will always have the final say on what you do.  
@@ -49,3 +51,5 @@ There is no guarantee that all ranks will have sufficient data for the optimal f
 Values <100 allow for effectively useless and near-random choices. 100-1000 has a high chance of having weird choices, but is mostly fine. >1000 is usually entirely fine.
 * `minGamesPatch`: An integer value. At least this many games must have been completed in this patch and rank combination in ranked to use data from this patch. Otherwise uses data from the previous patch.  
 The default value of 250000 should take less than 6 hours to reach in Emerald+ after a patch, and allows even the least played champions to get about 100 games worth of data. If you use data from higher ranks, you may want to set this lower.
+
+</div>
