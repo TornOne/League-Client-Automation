@@ -50,6 +50,6 @@ There is no guarantee that all ranks will have sufficient data for the optimal f
 * `minGamesChamp`: An integer value. At least this many games must be present for this champion, lane, and rank combination to use the available data. Can set it to 0 to disable it, or set it higher if you'd rather make your own choices than rely on questionable amounts of data.  
 Values <100 allow for effectively useless and near-random choices. 100-1000 has a high chance of having weird choices, but is mostly fine. >1000 is usually entirely fine.
 * `minGamesPatch`: An integer value. At least this many games must have been completed in this patch and rank combination in ranked to use data from this patch. Otherwise uses data from the previous patch.  
-The default value of 250000 should take less than 6 hours to reach in Emerald+ after a patch, and allows even the least played champions to get about 100 games worth of data. If you use data from higher ranks, you may want to set this lower.
+The default value of 500000 should take less than half a day to reach in Emerald+ after a patch, and allows even the least played champions to get about 100 games worth of data. If you use data from higher ranks, you may want to set this lower.
 
 </div>
