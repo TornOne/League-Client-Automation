@@ -15,7 +15,7 @@ namespace LCA.Client {
 		static readonly Dictionary<string, Func<string, string, Json.Node, Task>> eventActions = new Dictionary<string, Func<string, string, Json.Node, Task>> {
 			//{ "OnJsonApiEvent", AllEvents },
 			{ "OnJsonApiEvent_lol-perks_v1_pages", RunePageEvent },
-			{ "OnJsonApiEvent_lol-champ-select_v1_current-champion", CurrentChampionEvent },
+			//{ "OnJsonApiEvent_lol-champ-select_v1_current-champion", CurrentChampionEvent },
 			{ "OnJsonApiEvent_lol-champ-select_v1_session", LobbySessionEvent }
 		};
 
@@ -117,7 +117,7 @@ namespace LCA.Client {
 		}
 
 		//Fired when your currently locked-in champion changes
-		//TODO: This might be broken, so you might need to parse this out of the session event below
+		/* Broken for a while, switched to LobbySessionEvent
 		static async Task CurrentChampionEvent(string eventType, string eventUri, Json.Node data) {
 			if ((eventType == "Create" || eventType == "Update") &&
 				data.TryGet(out int championId) &&
@@ -132,9 +132,11 @@ namespace LCA.Client {
 				}
 			}
 		}
+		*/
 
 		//Fired for numerous events that occur during champion select
 		static async Task LobbySessionEvent(string eventType, string eventUri, Json.Node data) {
+			//Get the lane and ban suggestions
 			if (eventType == "Create") {
 				State.modeHasBench = data["benchEnabled"].Get<bool>();
 				int queueId = (await Http.GetJson("/lol-gameflow/v1/session"))["gameData"]["queue"]["id"].Get<int>();
@@ -161,6 +163,7 @@ namespace LCA.Client {
 			}
 
 			if (eventType == "Create" || eventType == "Update") {
+				//Find champion ranks for All Random game modes
 				if (State.modeHasBench) {
 					Dictionary<int, RankInfo> ranks = await LolAlytics.GetRanks(State.currentLane);
 					if (ranks.Count > 0) { //0 means we have failed to fetch ranks in the past, lets not spam their server
@@ -179,10 +182,28 @@ namespace LCA.Client {
 						}
 					}
 				}
+
+				//Detect champion changes
+				foreach (Json.Object teammate in (Json.Array)data["myTeam"]) {
+					if (teammate["summonerId"].Get<long>() == State.summonerId &&
+						teammate["championId"].TryGet(out int championId) &&
+						Champion.idToChampion.TryGetValue(championId, out Champion champion) &&
+						champion != State.currentChampion) {
+
+						State.currentChampion = champion;
+						LolAlytics lolAlytics = await Actions.LoadChampion(champion, State.currentLane);
+
+						if (!State.modeHasBench && lolAlytics != null) {
+							Actions.PrintLolAlytics(lolAlytics, champion, State.currentLane);
+						}
+
+						break;
+					}
+				}
 			}
 			
 			if (eventType == "Delete") {
-				if (State.modeHasBench && State.currentChampion.TryGetLolAlytics(State.currentLane, out LolAlytics lolAlytics)) {
+				if (State.modeHasBench && State.currentChampion != null && State.currentChampion.TryGetLolAlytics(State.currentLane, out LolAlytics lolAlytics)) {
 					Actions.PrintLolAlytics(lolAlytics, State.currentChampion, State.currentLane);
 				}
 
