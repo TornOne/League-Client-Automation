@@ -33,6 +33,7 @@ namespace LCA {
 			{ Lane.ARURF, Rank.platinum_plus }
 		};
 		public static int banSuggestions = 3;
+		public static int eventBanSuggestions = 6;
 		public static int maxItemSets = 12;
 		public static int minGamesChamp = 100;
 		public static int minGamesPatch = 250000;
@@ -56,6 +57,7 @@ namespace LCA {
 				TrySetValue(nameof(openLolAlytics), ref openLolAlytics);
 				TrySetValue(nameof(setSummonerSpells), ref setSummonerSpells);
 				TrySetValue(nameof(banSuggestions), ref banSuggestions);
+				TrySetValue(nameof(eventBanSuggestions), ref eventBanSuggestions);
 				TrySetValue(nameof(maxItemSets), ref maxItemSets);
 				TrySetValue(nameof(minGamesChamp), ref minGamesChamp);
 				TrySetValue(nameof(minGamesPatch), ref minGamesPatch);
@@ -96,6 +98,7 @@ namespace LCA {
 				{ nameof(spellOrder), Array.ConvertAll(spellOrder, spell => spell.ToString()) },
 				{ nameof(queueRankMap), queueRankMap.ToDictionary(pair => pair.Key.ToString(), pair => pair.Value.ToString()) },
 				{ nameof(banSuggestions), banSuggestions },
+				{ nameof(eventBanSuggestions), eventBanSuggestions },
 				{ nameof(maxItemSets), maxItemSets },
 				{ nameof(minGamesChamp), minGamesChamp },
 				{ nameof(minGamesPatch), minGamesPatch }

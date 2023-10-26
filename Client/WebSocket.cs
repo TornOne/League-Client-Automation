@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace LCA.Client {
+	//https://www.mingweisamuel.com/lcu-schema/tool/
 	static class WebSocket {
 		static ClientWebSocket socket;
 		static byte[] receiveBuffer = new byte[1024];
@@ -116,6 +117,7 @@ namespace LCA.Client {
 		}
 
 		//Fired when your currently locked-in champion changes
+		//TODO: This might be broken, so you might need to parse this out of the session event below
 		static async Task CurrentChampionEvent(string eventType, string eventUri, Json.Node data) {
 			if ((eventType == "Create" || eventType == "Update") &&
 				data.TryGet(out int championId) &&
@@ -147,11 +149,14 @@ namespace LCA.Client {
 						}
 					}
 
-					//TODO: Add ban suggestions for other game modes
 					if (Config.banSuggestions > 0) {
 						await ListBanSuggestions(Lane.Default, "Suggested overall bans:");
 						await ListBanSuggestions(State.currentLane, $"Suggested bans for {State.currentLane}:");
 					}
+				}
+
+				if (Config.eventBanSuggestions > 0 && State.currentLane == Lane.Nexus) {
+					await ListBanSuggestions(State.currentLane, $"Suggested bans:");
 				}
 			}
 

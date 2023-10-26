@@ -44,12 +44,12 @@ namespace LCA {
 						continue;
 					}
 					//delta WR * pick rate / (1 - ban rate)
-					bans.Add(new BanInfo(int.Parse(champion.Key), (champion.Value[3].Get<double>() / picks - avgWr) * picks / allPicks / (1 - champion.Value[6].Get<double>() * 0.01) * 1e5));
+					bans.Add(new BanInfo(int.Parse(champion.Key), (champion.Value[3].Get<double>() / picks - avgWr) * picks / allPicks / (1 - champion.Value[lane <= Lane.Support ? 6 : 5].Get<double>() * 0.01) * 1e5));
 				}
 				bans.Sort((a, b) => Math.Sign(b.pbi - a.pbi));
 
-				banSuggestions[lane] = new BanInfo[Config.banSuggestions];
-				bans.CopyTo(0, banSuggestions[lane], 0, Config.banSuggestions);
+				banSuggestions[lane] = new BanInfo[lane <= Lane.Support ? Config.banSuggestions : Config.eventBanSuggestions];
+				bans.CopyTo(0, banSuggestions[lane], 0, banSuggestions[lane].Length);
 			} catch (Exception e) {
 				Console.WriteLine($"Fetching {lane} ranking data failed ({e.Message})\n{e.StackTrace}");
 				banSuggestions[lane] = Array.Empty<BanInfo>();

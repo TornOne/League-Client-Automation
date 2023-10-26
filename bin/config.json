@@ -26,7 +26,8 @@
     "UltimateSpellBook": "platinum_plus",
     "ARURF": "platinum_plus"
   },
-  "banSuggestions": 3,
+	"banSuggestions": 3,
+	"eventBanSuggestions":  6,
   "maxItemSets": 12,
   "minGamesChamp": 100,
   "minGamesPatch": 500000
