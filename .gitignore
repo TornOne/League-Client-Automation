@@ -16,12 +16,12 @@
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
-[Rr]elease/
+#[Rr]elease/
 [Rr]eleases/
 x64/
 x86/
 bld/
-#[Bb]in/
+[Bb]in/
 [Oo]bj/
 [Ll]og/
 
@@ -334,6 +334,3 @@ ASALocalRun/
 .localhistory/
 
 # Custom files
-bin/Manifest Composer.exe
-bin/manifest userfiles.txt
-bin/runes.txt

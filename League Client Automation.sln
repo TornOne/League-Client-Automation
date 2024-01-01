@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.0.31919.166
+VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "League Client Automation", "League Client Automation.csproj", "{DE3193FE-887B-4EDF-A17A-72791693B30D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "League Client Automation", "League Client Automation.csproj", "{6824CCF7-1F07-43B4-BB01-AD481AF632A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DE3193FE-887B-4EDF-A17A-72791693B30D}.Debug|x64.ActiveCfg = Debug|x64
-		{DE3193FE-887B-4EDF-A17A-72791693B30D}.Debug|x64.Build.0 = Debug|x64
-		{DE3193FE-887B-4EDF-A17A-72791693B30D}.Release|x64.ActiveCfg = Release|x64
-		{DE3193FE-887B-4EDF-A17A-72791693B30D}.Release|x64.Build.0 = Release|x64
+		{6824CCF7-1F07-43B4-BB01-AD481AF632A4}.Debug|x64.ActiveCfg = Debug|x64
+		{6824CCF7-1F07-43B4-BB01-AD481AF632A4}.Debug|x64.Build.0 = Debug|x64
+		{6824CCF7-1F07-43B4-BB01-AD481AF632A4}.Release|x64.ActiveCfg = Release|x64
+		{6824CCF7-1F07-43B4-BB01-AD481AF632A4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {0C170946-27AE-4AAC-A49B-246032B15043}
+		SolutionGuid = {F4341AB3-7FB8-4E93-9C53-1F78C8355EC6}
 	EndGlobalSection
 EndGlobal

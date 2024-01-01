@@ -1,0 +1,35 @@
+{
+  "installPath": "C:/Program Files/Riot Games/League of Legends/",
+  "launchGame": false,
+  "setSummonerSpells": true,
+  "spellOrder": [
+    "Placeholder",
+    "Mark",
+    "Smite",
+    "Ignite",
+    "Exhaust",
+    "Clarity",
+    "Heal",
+    "Barrier",
+    "Cleanse",
+    "Teleport",
+    "Ghost",
+    "Flash"
+  ],
+  "banSuggestions": 3,
+  "eventBanSuggestions": 6,
+  "maxItemSets": 12,
+  "minGamesChamp": 1000,
+  "thirdPartyInterface": 1,
+  "openThirdPartySite": false,
+  "lolAlyticsQueueRankMap": {
+    "Default": "emerald_plus",
+    "ARAM": "platinum_plus",
+    "URF": "platinum_plus",
+    "OneForAll": "platinum_plus",
+    "Nexus": "platinum_plus",
+    "UltimateSpellBook": "platinum_plus",
+    "ARURF": "platinum_plus",
+    "Arena": "platinum_plus"
+  }
+}

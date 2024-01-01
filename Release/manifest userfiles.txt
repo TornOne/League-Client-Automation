@@ -1,0 +1,6 @@
+Manifest Composer.exe
+manifest userfiles.txt
+manifest
+//Userfiles beyond this point, no empty lines allowed
+config.json
+runes.txt
