@@ -23,6 +23,8 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
     <PublishAot>true</PublishAot>
+
+    <ApplicationIcon>Ledros.ico</ApplicationIcon>
     <!--<IlcDisableReflection>true</IlcDisableReflection>-->
 	<!--<IlcGenerateMstatFile>true</IlcGenerateMstatFile>-->
 	<!--<IlcGenerateDgmlFile>true</IlcGenerateDgmlFile>-->
@@ -43,6 +45,10 @@
     <Compile Remove="Release\**" />
     <EmbeddedResource Remove="Release\**" />
     <None Remove="Release\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Ledros.ico" />
   </ItemGroup>
 
   <ItemGroup>
