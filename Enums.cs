@@ -32,5 +32,3 @@ enum Spell {
 	Mark = 32,
 	Placeholder = 54
 }
-
-//TODO: AoT discards all the enum data

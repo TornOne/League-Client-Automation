@@ -11,7 +11,7 @@ class LolAlytics : IInterface {
 	static readonly HttpClient http = new() {
 		BaseAddress = new Uri("https://ax.lolalytics.com")
 	};
-	static readonly string[] smallRunes = [ "5008", "5005", "5007", "5008f", "5002f", "5003f", "5001", "5002", "5003" ];
+	static readonly string[] smallRunes = [ "5008", "5005", "5007", "5008f", "5010f", "5001f", "5011", "5013", "5001" ];
 	static readonly Dictionary<Lane, BanInfo[]> banSuggestions = [];
 	static readonly Dictionary<Lane, Dictionary<int, RankInfo>> ranks = [];
 
