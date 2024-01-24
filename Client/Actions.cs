@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace LCA.Client;
@@ -58,7 +59,7 @@ static class Actions {
 		Console.WriteLine($"Selected {champion.fullName} ({lane})");
 
 		if (Config.openThirdPartySite && data.url is not null) {
-			System.Diagnostics.Process.Start(data.url);
+			Process.Start(new ProcessStartInfo(data.url) { UseShellExecute = true });
 		}
 
 		if (data is not null) {
