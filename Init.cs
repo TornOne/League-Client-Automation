@@ -17,9 +17,20 @@ static class Init {
 			Process.Start(Config.installPath + "LeagueClient.exe");
 		}
 
-		//Make sure the game is running and find the credentials
+		//Make sure the game is running
+		DateTime leagueStartTime;
+		while (true) {
+			Process[] processes = Process.GetProcessesByName("LeagueClient");
+			if (processes.Length > 0) {
+				leagueStartTime = processes[0].StartTime;
+				break;
+			}
+			await Task.Delay(1000);
+		}
+
+		//Find the credentials
 		string lockfilePath = Config.installPath + "lockfile";
-		while (!File.Exists(lockfilePath)) {
+		while (!File.Exists(lockfilePath) || new FileInfo(lockfilePath).LastWriteTime < leagueStartTime) { //Check that we don't have an old lockfile from last time
 			await Task.Delay(1000);
 		}
 		string[] credentials;
