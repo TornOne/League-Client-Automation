@@ -15,7 +15,7 @@ Potential future features include:
 * Counterpick suggestions.
 
 # Setup
-* Navigate under Releases and download the zip file from the latest release.
+* Download the zip file from the [latest release](https://github.com/TornOne/League-Client-Automation/releases/latest).
 * Unzip it to a not write-protected location of your choosing, and run `Patcher.exe`.  
 Note: The program does not automatically update. You may occasionally run Patcher.exe again to check if there have been any updates.
 * Open `config.json` and edit the `installPath` value to point to your League installation folder.  
