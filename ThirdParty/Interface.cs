@@ -34,5 +34,6 @@ class Data(string? url, string skillOrder, string firstSkills, int spell1Id, int
 
 enum API {
 	None,
-	LolAlytics
+	LolAlytics,
+	LolAlytics2
 }

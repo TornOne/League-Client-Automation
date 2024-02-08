@@ -11,6 +11,8 @@ static class Init {
 
 		if (Config.thirdPartyInterface == ThirdParty.API.LolAlytics) {
 			ThirdParty.Interface.Initialize<ThirdParty.LolAlytics>();
+		} else if (Config.thirdPartyInterface == ThirdParty.API.LolAlytics2) {
+			ThirdParty.Interface.Initialize<ThirdParty.LolAlytics2>();
 		}
 
 		if (Config.launchGame) {
