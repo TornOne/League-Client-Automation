@@ -20,7 +20,7 @@
   "eventBanSuggestions": 6,
   "maxItemSets": 12,
   "minGamesChamp": 1000,
-  "thirdPartyInterface": 1,
+  "thirdPartyInterface": 2,
   "openThirdPartySite": false,
   "lolAlyticsQueueRankMap": {
     "Default": "emerald_plus",

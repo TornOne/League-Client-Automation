@@ -23,30 +23,31 @@ class LolAlytics2 : IInterface {
 	//TODO: Might need to check at the start, whether there are enough games played this patch to even fetch ban suggestions and the like
 	public static Task Initialize() => Task.CompletedTask;
 
-	//TODO
 	public static async Task<BanInfo[]> GetBanSuggestions(Lane lane) {
 		if (banSuggestions.TryGetValue(lane, out BanInfo[]? topBans)) {
 			return topBans;
 		}
 
+		bool isMainGameMode = lane <= Lane.Support;
 		try {
-			using JsonDocument jsonDoc = JsonDocument.Parse(await http.GetStringAsync($"https://ax.lolalytics.com/tierlist/1/?{MakeQueryString(lane)}"));
-			JsonElement rankings = jsonDoc.RootElement;
-			int allPicks = rankings.GetProperty("pick").GetInt32();
-			double avgWr = rankings.GetProperty("win").GetDouble() / allPicks;
+			using JsonDocument jsonDoc = JsonDocument.Parse(await http.GetStringAsync($"https://a1.lolalytics.com/mega/{MakeListQueryString(lane)}"));
+			JsonElement data = jsonDoc.RootElement;
+			int allPicks = data.GetProperty("analysed").GetInt32();
+			double avgWr = data.GetProperty("avgWr").GetDouble() * 0.01;
 
 			List<BanInfo> bans = [];
-			foreach (JsonProperty champion in rankings.GetProperty("cid").EnumerateObject()) {
-				int picks = champion.Value[4].GetInt32();
+			foreach (JsonProperty championProp in data.GetProperty("cid").EnumerateObject()) {
+				JsonElement champion = championProp.Value;
+				int picks = champion.GetProperty("games").GetInt32();
 				if (picks == 0) {
 					continue;
 				}
 				//delta WR * pick rate / (1 - ban rate)
-				bans.Add(new BanInfo(int.Parse(champion.Name), (champion.Value[3].GetDouble() / picks - avgWr) * picks / allPicks / (1 - champion.Value[lane <= Lane.Support ? 6 : 5].GetDouble() * 0.01) * 1e5));
+				bans.Add(new BanInfo(int.Parse(championProp.Name), (champion.GetProperty("wr").GetDouble() * 0.01 - avgWr) * picks / allPicks / (1 - champion.GetProperty("br").GetDouble() * 0.01) * 1e5));
 			}
 			bans.Sort((a, b) => Math.Sign(b.pbi - a.pbi));
 
-			banSuggestions[lane] = new BanInfo[lane <= Lane.Support ? Config.banSuggestions : Config.eventBanSuggestions];
+			banSuggestions[lane] = new BanInfo[isMainGameMode ? Config.banSuggestions : Config.eventBanSuggestions];
 			bans.CopyTo(0, banSuggestions[lane], 0, banSuggestions[lane].Length);
 		} catch (Exception e) {
 			Console.WriteLine($"Fetching {lane} ranking data failed ({e.Message})\n{e.StackTrace}");
@@ -56,7 +57,6 @@ class LolAlytics2 : IInterface {
 		return banSuggestions[lane];
 	}
 
-	//TODO
 	public static async Task<Dictionary<int, RankInfo>> GetRanks(Lane queue) {
 		if (LolAlytics2.ranks.TryGetValue(queue, out Dictionary<int, RankInfo>? ranks)) {
 			return ranks;
@@ -64,13 +64,14 @@ class LolAlytics2 : IInterface {
 
 		ranks = [];
 		try {
-			using JsonDocument jsonDoc = JsonDocument.Parse(await http.GetStringAsync($"https://ax.lolalytics.com/tierlist/1/?{MakeQueryString(queue)}"));
-			JsonElement rankings = jsonDoc.RootElement;
-			double avgWr = rankings.GetProperty("win").GetDouble() / rankings.GetProperty("pick").GetInt32();
+			using JsonDocument jsonDoc = JsonDocument.Parse(await http.GetStringAsync($"https://a1.lolalytics.com/mega/{MakeListQueryString(queue)}"));
+			JsonElement data = jsonDoc.RootElement;
+			double avgWr = data.GetProperty("avgWr").GetDouble() * 0.01;
 
-			foreach (JsonProperty champion in rankings.GetProperty("cid").EnumerateObject()) {
-				double wr = champion.Value[3].GetDouble() / champion.Value[4].GetInt32();
-				ranks[int.Parse(champion.Name)] = new RankInfo(champion.Value[0].GetInt32(), wr, wr - avgWr);
+			foreach (JsonProperty championProp in data.GetProperty("cid").EnumerateObject()) {
+				JsonElement champion = championProp.Value;
+				double wr = champion.GetProperty("wr").GetDouble() * 0.01;
+				ranks[int.Parse(championProp.Name)] = new RankInfo(champion.GetProperty("rank").GetInt32(), wr, wr - avgWr);
 			}
 		} catch (Exception e) {
 			Console.WriteLine($"Fetching {queue} ranking data failed ({e.Message})\n{e.StackTrace}");
@@ -280,6 +281,12 @@ class LolAlytics2 : IInterface {
 	static string MakeQueryString(Lane lane, bool previousPatch = false) {
 		bool isMainGameMode = lane <= Lane.Support;
 		return $"?{(isMainGameMode ? $"lane={lane.ToString().ToLower()}" : "")}&tier={Config.lolAlyticsQueueRankMap[(isMainGameMode ? Lane.Default : lane)]}&patch={Client.State.gameVersionMajor}.{(previousPatch ? Client.State.gameVersionMinor - 1 : Client.State.gameVersionMinor)}";
+	}
+
+	static string MakeListQueryString(Lane lane, bool previousPatch = false) {
+		bool isMainGameMode = lane <= Lane.Support;
+		string laneString = lane.ToString().ToLower();
+		return $"?ep=list&v=1&patch={Client.State.gameVersionMajor}.{(previousPatch ? Client.State.gameVersionMinor - 1 : Client.State.gameVersionMinor)}{(isMainGameMode ? $"lane={laneString}" : "")}&tier={Config.lolAlyticsQueueRankMap[(isMainGameMode ? Lane.Default : lane)]}&queue={(isMainGameMode ? "ranked" : laneString)}&region=all";
 	}
 
 	static char ChooseNextSkill(int pickTotal, Dictionary<string, (int picks, int wins)> allSkills, string given) {
