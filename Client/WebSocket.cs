@@ -163,7 +163,7 @@ static class WebSocket {
 				}
 			}
 
-			if (Config.eventBanSuggestions > 0 && (State.currentLane == Lane.Nexus || State.currentLane == Lane.URF)) { //TODO: Check that the game mode has bans and that it is not the main game mode
+			if (Config.eventBanSuggestions > 0 && State.EventModeHasBans) {
 				await ListBanSuggestions(State.currentLane, $"Suggested bans:");
 			}
 		}
