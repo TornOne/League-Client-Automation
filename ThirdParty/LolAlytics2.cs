@@ -285,8 +285,8 @@ class LolAlytics2 : IInterface {
 
 	static string MakeListQueryString(Lane lane, bool previousPatch = false) {
 		bool isMainGameMode = lane <= Lane.Support;
-		string laneString = lane.ToString().ToLower();
-		return $"?ep=list&v=1&patch={Client.State.gameVersionMajor}.{(previousPatch ? Client.State.gameVersionMinor - 1 : Client.State.gameVersionMinor)}{(isMainGameMode ? $"lane={laneString}" : "")}&tier={Config.lolAlyticsQueueRankMap[(isMainGameMode ? Lane.Default : lane)]}&queue={(isMainGameMode ? "ranked" : laneString)}&region=all";
+		string laneString = lane == Lane.Default ? "all" : lane.ToString().ToLower();
+		return $"?ep=list&v=1&patch={Client.State.gameVersionMajor}.{(previousPatch ? Client.State.gameVersionMinor - 1 : Client.State.gameVersionMinor)}{(isMainGameMode ? $"&lane={laneString}" : "")}&tier={Config.lolAlyticsQueueRankMap[(isMainGameMode ? Lane.Default : lane)]}&queue={(isMainGameMode ? "ranked" : laneString)}&region=all";
 	}
 
 	static char ChooseNextSkill(int pickTotal, Dictionary<string, (int picks, int wins)> allSkills, string given) {
